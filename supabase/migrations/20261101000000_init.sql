@@ -4,7 +4,7 @@
 create extension if not exists "pgcrypto";
 
 -- 1. Companies Table
-create table if any not exists companies (
+create table if not exists companies (
   id uuid primary key default gen_random_uuid(),
   slug text unique not null,
   name text not null,
