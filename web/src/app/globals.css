@@ -1,0 +1,40 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-ibm-plex-sans: 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
+  --font-ibm-plex-mono: 'IBM Plex Mono', monospace;
+  --font-jetbrains-mono: 'JetBrains Mono', 'IBM Plex Mono', monospace;
+}
+
+/* Smooth scrollbar hiding */
+* {
+  scrollbar-width: none;
+}
+*::-webkit-scrollbar {
+  display: none;
+}
+
+/* Focus ring */
+:focus-visible {
+  outline: 2px solid #1B4F8F;
+  outline-offset: 2px;
+}
+
+/* Chip style utility */
+.chip {
+  @apply inline-flex items-center px-2 py-0.5 rounded text-[11px] font-mono font-medium bg-[#EAEFF3] text-[#0F1F2A];
+}
+
+.chip-featured {
+  @apply bg-[#FFF4EC] text-[#C2410C] border border-[#FCD9BD];
+}
+
+.chip-salary {
+  @apply bg-[#E6F5EE] text-[#0B7A4B] border border-[#BCE3CC];
+}
+
+.chip-new {
+  @apply bg-[#EBF5FF] text-[#1B4F8F] uppercase tracking-wider;
+}
