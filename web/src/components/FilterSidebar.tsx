@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { FilterState, ALL_CATEGORIES, ALL_LEVELS, ALL_WORK_MODES, Category, Level, WorkMode } from '@/lib/types'
+import { FilterState, ALL_CATEGORIES, ALL_LEVELS, ALL_WORK_MODES } from '@/lib/types'
 
 interface FilterSidebarProps {
   filters: FilterState

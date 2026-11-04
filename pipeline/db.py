@@ -6,11 +6,14 @@ import os
 import datetime as dt
 from typing import List, Dict, Any, Tuple, Optional
 from dotenv import load_dotenv
+from pathlib import Path
 
 load_dotenv()
+load_dotenv(Path(__file__).parent / ".env")
+load_dotenv(Path(__file__).parent.parent / "web" / ".env.local")
 
 SUPABASE_URL = os.environ.get("NEXT_PUBLIC_SUPABASE_URL") or os.environ.get("SUPABASE_URL")
-SUPABASE_KEY = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
+SUPABASE_KEY = os.environ.get("SUPABASE_SERVICE_ROLE_KEY") or os.environ.get("SUPABASE_SECRET_KEY")
 
 _client = None
 

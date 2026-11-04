@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient, isSupabaseConfigured } from '@/lib/supabase'
-import { MOCK_JOBS } from '@/lib/mock-jobs'
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
@@ -15,7 +14,8 @@ export async function GET(request: NextRequest) {
   const salaryOnly = searchParams.get('salary') === '1'
   const sort = searchParams.get('sort') || 'newest'
   const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10))
-  const pageSize = 25
+  const limitParam = parseInt(searchParams.get('limit') || searchParams.get('pageSize') || '100', 10)
+  const pageSize = Math.min(Math.max(1, limitParam), 250)
 
   if (isSupabaseConfigured()) {
     try {
@@ -79,55 +79,16 @@ export async function GET(request: NextRequest) {
         })
       }
     } catch (e) {
-      console.warn('Supabase query failed, falling back to mock jobs:', e)
+      console.warn('Supabase query failed:', e)
     }
   }
 
-  // Fallback to local mock filtering
-  let filtered = MOCK_JOBS.filter((job) => {
-    if (q) {
-      const query = q.toLowerCase()
-      const match =
-        job.title.toLowerCase().includes(query) ||
-        job.companies?.name.toLowerCase().includes(query) ||
-        (job.location || '').toLowerCase().includes(query) ||
-        job.category.toLowerCase().includes(query)
-      if (!match) return false
-    }
-
-    if (country && country !== 'Anywhere') {
-      const inCountry = job.countries.includes(country)
-      const isRemoteWorldwide =
-        includeRemote && job.work_mode === 'Remote' && (job.worldwide || job.probably_worldwide)
-      if (!inCountry && !isRemoteWorldwide) return false
-    }
-
-    if (categories.length > 0 && !categories.includes(job.category)) return false
-    if (levels.length > 0 && !levels.includes(job.level)) return false
-    if (workModes.length > 0 && !workModes.includes(job.work_mode)) return false
-    if (salaryOnly && !job.salary_min && !job.salary_text) return false
-
-    return true
-  })
-
-  if (sort === 'salary') {
-    filtered.sort((a, b) => (b.salary_min || 0) - (a.salary_min || 0))
-  } else {
-    filtered.sort(
-      (a, b) =>
-        new Date(b.posted_at || b.first_seen).getTime() -
-        new Date(a.posted_at || a.first_seen).getTime()
-    )
-  }
-
-  const total = filtered.length
-  const paginated = filtered.slice((page - 1) * pageSize, page * pageSize)
-
+  // Return empty list if database unconfigured or error
   return NextResponse.json({
-    jobs: paginated,
-    total,
+    jobs: [],
+    total: 0,
     page,
     pageSize,
-    hasMore: total > page * pageSize,
+    hasMore: false,
   })
 }

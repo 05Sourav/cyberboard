@@ -1,5 +1,6 @@
 import React from 'react'
 import Link from 'next/link'
+import { siteConfig } from '@/config/site'
 
 export default function TermsPage() {
   return (
@@ -35,7 +36,7 @@ export default function TermsPage() {
         <section>
           <h2 className="text-[20px] font-semibold text-[#0F1F2A] mb-2">4. Contact Information</h2>
           <p className="text-[#58697A]">
-            For legal and contractual notices, contact <code>legal@cyberboard.dev</code>.
+            For legal and contractual notices, contact <code>{siteConfig.emails.legal}</code>.
           </p>
         </section>
       </div>

@@ -1,10 +1,10 @@
 'use client'
 
 import React, { useState, useEffect, useMemo, Suspense } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { FilterState, Job } from '@/lib/types'
-import { parseFilters, serializeFilters, countryFromTimezone } from '@/lib/utils'
-import { MOCK_JOBS } from '@/lib/mock-jobs'
+import { parseFilters, serializeFilters } from '@/lib/utils'
+import { partitionPromotedJobs } from '@/lib/promotions'
 import { SearchBar } from '@/components/SearchBar'
 import { FilterSidebar } from '@/components/FilterSidebar'
 import { MobileFilterDrawer } from '@/components/MobileFilterDrawer'
@@ -12,29 +12,66 @@ import { FeaturedBlock } from '@/components/FeaturedBlock'
 import { JobCard } from '@/components/JobCard'
 
 function JobsBoard() {
-  const router = useRouter()
   const searchParams = useSearchParams()
 
   // Initialize filters from URL or defaults
   const [filters, setFilters] = useState<FilterState>(() => {
     const parsed = parseFilters(searchParams)
-    // If no country specified, try timezone detection, fallback to 'India'
+    // If no country specified in URL, default to 'Anywhere' to show all listings
     if (!searchParams.get('country')) {
-      const detected = countryFromTimezone()
-      parsed.country = detected || 'India'
+      parsed.country = 'Anywhere'
     }
     return parsed
   })
 
   const [sortOpen, setSortOpen] = useState(false)
   const [visibleCount, setVisibleCount] = useState(15)
+  const [allJobs, setAllJobs] = useState<Job[]>([])
+  const [isLoading, setIsLoading] = useState(true)
 
-  // Sync state changes to URL
+  // Fetch real jobs from Supabase API (falls back cleanly to mock jobs ONLY if database is empty or offline)
+  useEffect(() => {
+    let isMounted = true
+    async function fetchLiveJobs() {
+      try {
+        setIsLoading(true)
+        const res = await fetch('/api/jobs')
+        if (res.ok) {
+          const data = await res.json()
+          if (isMounted && data.jobs) {
+            setAllJobs(data.jobs)
+          }
+        }
+      } catch (err) {
+        console.warn('API fetch failed:', err)
+      } finally {
+        if (isMounted) setIsLoading(false)
+      }
+    }
+    fetchLiveJobs()
+    return () => {
+      isMounted = false
+    }
+  }, [])
+
+  // Handle browser back/forward buttons
+  useEffect(() => {
+    const handlePopState = () => {
+      const currentParams = new URLSearchParams(window.location.search)
+      setFilters(parseFilters(currentParams))
+    }
+    window.addEventListener('popstate', handlePopState)
+    return () => window.removeEventListener('popstate', handlePopState)
+  }, [])
+
+  // Sync state changes to URL cleanly without router rendering collisions
   const updateFilters = (updated: Partial<FilterState>) => {
     setFilters((prev) => {
       const next = { ...prev, ...updated, page: 1 }
       const qs = serializeFilters(next)
-      router.replace(qs ? `/?${qs}` : '/', { scroll: false })
+      if (typeof window !== 'undefined') {
+        window.history.replaceState(null, '', qs ? `/?${qs}` : '/')
+      }
       return next
     })
   }
@@ -54,12 +91,15 @@ function JobsBoard() {
     }
     setFilters(defaultState)
     const qs = serializeFilters(defaultState)
-    router.replace(qs ? `/?${qs}` : '/', { scroll: false })
+    if (typeof window !== 'undefined') {
+      window.history.replaceState(null, '', qs ? `/?${qs}` : '/')
+    }
   }
 
-  // Filter and sort mock jobs (or fetched jobs)
+  // Filter and sort jobs (Supabase live data)
   const filteredJobs = useMemo(() => {
-    return MOCK_JOBS.filter((job) => {
+    const now = Date.now()
+    return allJobs.filter((job) => {
       // Search query
       if (filters.q) {
         const query = filters.q.toLowerCase()
@@ -110,7 +150,7 @@ function JobsBoard() {
             : filters.posted === '7d'
             ? 7
             : 30
-        const cutoff = Date.now() - days * 24 * 3600 * 1000
+        const cutoff = now - days * 24 * 3600 * 1000
         const jobTime = new Date(job.posted_at || job.first_seen).getTime()
         if (jobTime < cutoff) return false
       }
@@ -125,15 +165,13 @@ function JobsBoard() {
         new Date(a.posted_at || a.first_seen).getTime()
       )
     })
-  }, [filters])
+  }, [filters, allJobs])
 
-  // Split into Featured vs Regular
-  const featuredJobs = useMemo(() => {
-    return filteredJobs.filter((j) => (j.promotions?.length ?? 0) > 0)
-  }, [filteredJobs])
-
-  const regularJobs = useMemo(() => {
-    return filteredJobs.filter((j) => !j.promotions || j.promotions.length === 0)
+  // Apply promotion placement rules: max 3 pinned, random rotation, 1 per employer, overflow in regular list
+  const { pinnedJobs, regularJobs } = useMemo(() => {
+    return partitionPromotedJobs(filteredJobs, (items) => {
+      return [...items].sort(() => Math.random() - 0.5)
+    })
   }, [filteredJobs])
 
   const visibleRegularJobs = regularJobs.slice(0, visibleCount)
@@ -141,8 +179,8 @@ function JobsBoard() {
 
   // Dynamic counts for sidebar
   const counts = useMemo(() => {
-    const res: Record<string, number> = { total: MOCK_JOBS.length }
-    MOCK_JOBS.forEach((j) => {
+    const res: Record<string, number> = { total: allJobs.length }
+    allJobs.forEach((j) => {
       res[`mode_${j.work_mode}`] = (res[`mode_${j.work_mode}`] || 0) + 1
       res[`cat_${j.category}`] = (res[`cat_${j.category}`] || 0) + 1
       res[`lvl_${j.level}`] = (res[`lvl_${j.level}`] || 0) + 1
@@ -154,7 +192,7 @@ function JobsBoard() {
       }
     })
     return res
-  }, [])
+  }, [allJobs])
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-8 py-8 flex flex-col w-full">
@@ -273,8 +311,8 @@ function JobsBoard() {
               </div>
             </div>
 
-            {/* FEATURED ROLES BLOCK */}
-            <FeaturedBlock jobs={featuredJobs} />
+            {/* FEATURED ROLES BLOCK (MAX 3 PINNED) */}
+            <FeaturedBlock jobs={pinnedJobs} />
 
             {/* ALL ROLES SECTION */}
             <div className="mt-6">
@@ -282,7 +320,25 @@ function JobsBoard() {
                 All Roles
               </div>
 
-              {visibleRegularJobs.length === 0 && featuredJobs.length === 0 ? (
+              {isLoading ? (
+                <div className="space-y-2.5">
+                  {[...Array(6)].map((_, i) => (
+                    <div
+                      key={i}
+                      className="bg-white border border-[#D8E0E6] rounded-[6px] p-4 flex items-center justify-between gap-4 animate-pulse"
+                    >
+                      <div className="flex items-center gap-3.5 flex-1 min-w-0">
+                        <div className="w-10 h-10 rounded-[6px] bg-[#E2E8F0] shrink-0" />
+                        <div className="space-y-2 flex-1 max-w-md">
+                          <div className="h-4 bg-[#E2E8F0] rounded w-3/4" />
+                          <div className="h-3 bg-[#F1F5F9] rounded w-1/2" />
+                        </div>
+                      </div>
+                      <div className="h-8 w-20 bg-[#E2E8F0] rounded shrink-0 hidden sm:block" />
+                    </div>
+                  ))}
+                </div>
+              ) : visibleRegularJobs.length === 0 && pinnedJobs.length === 0 ? (
                 <div className="bg-white border border-[#D8E0E6] rounded-[6px] p-12 text-center my-4">
                   <div className="w-12 h-12 rounded-full bg-[#EBF5FF] text-[#1B4F8F] mx-auto flex items-center justify-center mb-3">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

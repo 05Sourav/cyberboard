@@ -1,5 +1,6 @@
 import React from 'react'
 import Link from 'next/link'
+import { siteConfig } from '@/config/site'
 export const dynamic = 'force-dynamic'
 
 export default async function EmployerReportPage({
@@ -78,7 +79,7 @@ export default async function EmployerReportPage({
         <div className="pt-2 flex items-center justify-between border-t border-[#D8E0E6]/50">
           <span className="font-mono text-[11px] text-[#58697A]">Need an extension or role swap?</span>
           <a
-            href="mailto:employers@cyberboard.dev?subject=Assistance%20with%20Promotion%20Report"
+            href={`mailto:${siteConfig.emails.employers}?subject=Assistance%20with%20Promotion%20Report`}
             className="text-[13px] font-semibold text-[#1B4F8F] hover:underline"
           >
             Contact Placement Desk →

@@ -1,9 +1,8 @@
 name: Weekly Employer Report
 
 on:
-  schedule:
-    # Run every Monday at 06:00 UTC
-    - cron: '0 6 * * 1'
+  # Cron disabled: pipeline/weekly_report.py is not yet implemented.
+  # Re-enable scheduled cron ('0 6 * * 1') once pipeline/weekly_report.py is created.
   workflow_dispatch:
 
 jobs:

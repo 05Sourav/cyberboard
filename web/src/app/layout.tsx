@@ -1,19 +1,20 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Header } from '@/components/Header'
+import { siteConfig } from '@/config/site'
 import './globals.css'
 
 export const metadata: Metadata = {
   title: {
-    default: 'Cyberboard — Cybersecurity Jobs, Checked Daily',
-    template: '%s | Cyberboard',
+    default: `${siteConfig.name} — Cybersecurity Jobs, Checked Daily`,
+    template: `%s | ${siteConfig.name}`,
   },
   description:
     'Real cybersecurity job listings from top employers — checked daily, removed within 24h. Filter by country, role type, level and salary.',
-  metadataBase: new URL(process.env.SITE_URL || 'https://cyberboard.co'),
+  metadataBase: new URL(siteConfig.url),
   openGraph: {
     type: 'website',
-    siteName: 'Cyberboard',
+    siteName: siteConfig.name,
   },
   robots: { index: true, follow: true },
 }

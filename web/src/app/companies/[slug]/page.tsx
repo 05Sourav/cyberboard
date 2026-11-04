@@ -1,27 +1,67 @@
 import React from 'react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { MOCK_JOBS } from '@/lib/mock-jobs'
+import type { Metadata } from 'next'
+import { createServerClient } from '@/lib/supabase'
 import { JobCard } from '@/components/JobCard'
 import { companyInitials } from '@/lib/utils'
+import { Job } from '@/lib/types'
+
 export const dynamic = 'force-dynamic'
 
-export default async function CompanyPage({
-  params,
-}: {
+interface Props {
   params: Promise<{ slug: string }>
-}) {
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
+  const supabase = createServerClient()
+  const { data: company } = await supabase
+    .from('companies')
+    .select('name')
+    .eq('slug', slug)
+    .eq('blocked', false)
+    .maybeSingle()
 
-  // Find all jobs matching this company slug
-  const companyJobs = MOCK_JOBS.filter((j) => j.companies?.slug === slug)
+  if (!company) {
+    return { title: 'Company Not Found' }
+  }
 
-  if (companyJobs.length === 0) {
-    // If not found in mock, return a graceful 404 or empty state
+  return {
+    title: `${company.name} Cybersecurity Jobs`,
+    description: `Verified open cybersecurity roles at ${company.name}. Link directly to official applications.`,
+  }
+}
+
+export default async function CompanyPage({ params }: Props) {
+  const { slug } = await params
+  const supabase = createServerClient()
+
+  // 1. Fetch company
+  const { data: company } = await supabase
+    .from('companies')
+    .select('id, name, slug, ats, domain, logo_url, hq_country')
+    .eq('slug', slug)
+    .eq('blocked', false)
+    .maybeSingle()
+
+  if (!company) {
     return notFound()
   }
 
-  const company = companyJobs[0].companies!
+  // 2. Fetch company active jobs
+  const { data: rawJobs } = await supabase
+    .from('jobs')
+    .select('*, promotions(id, tier, highlight, starts_at, ends_at)')
+    .eq('company_id', company.id)
+    .eq('status', 'active')
+    .order('first_seen', { ascending: false })
+
+  const jobs: Job[] = (rawJobs || []).map((j: any) => ({
+    ...j,
+    companies: company,
+  }))
+
   const initials = companyInitials(company.name)
 
   return (
@@ -70,7 +110,7 @@ export default async function CompanyPage({
 
         <div className="flex items-center gap-3">
           <div className="font-mono text-[13px] text-[#58697A] bg-[#F3F6F8] px-3 py-1.5 rounded border border-[#D8E0E6]">
-            {companyJobs.length} open {companyJobs.length === 1 ? 'role' : 'roles'}
+            {jobs.length} open {jobs.length === 1 ? 'role' : 'roles'}
           </div>
         </div>
       </div>
@@ -80,11 +120,17 @@ export default async function CompanyPage({
         <h2 className="text-[18px] font-bold text-[#0F1F2A] mb-4">
           Current Open Positions at {company.name}
         </h2>
-        <div className="space-y-2">
-          {companyJobs.map((job) => (
-            <JobCard key={job.id} job={job} />
-          ))}
-        </div>
+        {jobs.length === 0 ? (
+          <div className="bg-white border border-[#D8E0E6] rounded-xl p-8 text-center text-[#58697A]">
+            No roles currently open at {company.name}. Check back soon or browse all positions.
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {jobs.map((job) => (
+              <JobCard key={job.id} job={job} />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )

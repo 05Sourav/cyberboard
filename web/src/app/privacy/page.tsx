@@ -1,5 +1,6 @@
 import React from 'react'
 import Link from 'next/link'
+import { siteConfig } from '@/config/site'
 
 export default function PrivacyPage() {
   return (
@@ -42,7 +43,7 @@ export default function PrivacyPage() {
             <Link href="/remove" className="text-[#1B4F8F] underline">
               removal form
             </Link>{' '}
-            or by emailing <code>privacy@cyberboard.dev</code>.
+            or by emailing <code>{siteConfig.emails.privacy}</code>.
           </p>
         </section>
       </div>

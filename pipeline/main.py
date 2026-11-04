@@ -9,6 +9,14 @@ import argparse
 import datetime as dt
 from pathlib import Path
 
+# Ensure UTF-8 output encoding on Windows consoles
+if hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+if hasattr(sys.stderr, 'reconfigure'):
+    sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+
+sys.path.insert(0, str(Path(__file__).parent))
+
 from filters import is_security
 from enrich import enrich
 from fetchers import FETCHERS
@@ -17,7 +25,7 @@ ROSTER_PATH = Path(__file__).parent / "roster" / "companies.json"
 PAUSE_BETWEEN_COMPANIES = 0.5
 
 
-def run_pipeline(export_json_path: str = None):
+def run_pipeline(export_json_path: str = None, limit: int = None, target_company: str = None):
     started_at = dt.datetime.now(dt.timezone.utc).isoformat()
     print(f"[{started_at}] Starting Cyberboard Ingestion Pipeline...")
 
@@ -26,7 +34,14 @@ def run_pipeline(export_json_path: str = None):
         sys.exit(1)
 
     companies = json.loads(ROSTER_PATH.read_text(encoding="utf-8"))
-    print(f"Loaded {len(companies)} companies from roster.")
+    if target_company:
+        companies = [c for c in companies if c["slug"].lower() == target_company.lower()]
+        print(f"Filtered to target company: {target_company} (found {len(companies)})")
+    elif limit and limit > 0:
+        companies = companies[:limit]
+        print(f"Limited run to first {limit} companies.")
+    else:
+        print(f"Loaded {len(companies)} companies from roster.")
 
     # Determine database mode
     use_supabase = False
@@ -135,5 +150,7 @@ def run_pipeline(export_json_path: str = None):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Cyberboard Ingestion Pipeline")
     parser.add_argument("--export-json", type=str, default=None, help="Path to export JSON output (e.g. site/jobs.json)")
+    parser.add_argument("--limit", type=int, default=None, help="Limit number of companies to process")
+    parser.add_argument("--company", type=str, default=None, help="Process a specific company by slug")
     args = parser.parse_args()
-    run_pipeline(export_json_path=args.export_json)
+    run_pipeline(export_json_path=args.export_json, limit=args.limit, target_company=args.company)
