@@ -46,10 +46,11 @@ def run_pipeline(export_json_path: str = None, limit: int = None, target_company
     # Determine database mode
     use_supabase = False
     try:
-        from db import ensure_company, sync_company_jobs, log_pipeline_run
+        from db import ensure_company, sync_company_jobs, log_pipeline_run, get_client
+        get_client().table("companies").select("id").limit(1).execute()
         use_supabase = True
     except Exception as e:
-        print(f"Note: Supabase credentials not found or error ({e}). Running in offline/export mode.")
+        print(f"Note: Supabase unreachable or project paused ({e}). Running in offline/export mode.")
 
     companies_ok = 0
     companies_failed = 0
@@ -57,6 +58,7 @@ def run_pipeline(export_json_path: str = None, limit: int = None, target_company
     total_expired_jobs = 0
     errors = []
     all_enriched_jobs = []
+    company_stats = []  # per-company telemetry
 
     for idx, c in enumerate(companies):
         name = c.get("name", c["slug"])
@@ -87,6 +89,9 @@ def run_pipeline(export_json_path: str = None, limit: int = None, target_company
             print(f"[{idx+1}/{len(companies)}] ⚠️  404/Empty board for {name} ({slug}) on {ats}")
             companies_failed += 1
             errors.append({"company": name, "error": "Board returned 404"})
+            company_stats.append({"company": name, "ats": ats, "slug": slug,
+                                   "status": "404", "raw_jobs": 0, "security_jobs": 0,
+                                   "error": "Board returned 404"})
             time.sleep(PAUSE_BETWEEN_COMPANIES)
             continue
 
@@ -107,18 +112,32 @@ def run_pipeline(export_json_path: str = None, limit: int = None, target_company
                 comp_row = ensure_company(c)
                 if comp_row is None:
                     print(f"[{idx+1}/{len(companies)}] Company {name} is blocked; skipped.")
+                    company_stats.append({"company": name, "ats": ats, "slug": slug,
+                                           "status": "blocked", "raw_jobs": len(raw_jobs),
+                                           "security_jobs": len(sec_jobs), "error": "blocked"})
                     continue
                 n_upsert, n_exp, warn = sync_company_jobs(comp_row, ats, sec_jobs, started_at)
                 if warn:
                     errors.append({"company": name, "warning": warn})
                 total_active_jobs += n_upsert
                 total_expired_jobs += n_exp
+                company_stats.append({"company": name, "ats": ats, "slug": slug,
+                                       "status": "ok", "raw_jobs": len(raw_jobs),
+                                       "security_jobs": len(sec_jobs),
+                                       "active_upserted": n_upsert, "expired": n_exp,
+                                       "warning": warn or None})
                 print(f"[{idx+1}/{len(companies)}] ✅ {name} [{ats}]: {len(raw_jobs)} total -> {len(sec_jobs)} security ({n_exp} expired)")
             except Exception as db_err:
                 print(f"[{idx+1}/{len(companies)}] Database error for {name}: {db_err}")
                 errors.append({"company": name, "error": str(db_err)})
+                company_stats.append({"company": name, "ats": ats, "slug": slug,
+                                       "status": "db_error", "raw_jobs": len(raw_jobs),
+                                       "security_jobs": len(sec_jobs), "error": str(db_err)})
         else:
             total_active_jobs += len(sec_jobs)
+            company_stats.append({"company": name, "ats": ats, "slug": slug,
+                                   "status": "ok_offline", "raw_jobs": len(raw_jobs),
+                                   "security_jobs": len(sec_jobs)})
             print(f"[{idx+1}/{len(companies)}] ✅ {name} [{ats}]: {len(raw_jobs)} total -> {len(sec_jobs)} security")
 
         companies_ok += 1
@@ -144,6 +163,7 @@ def run_pipeline(export_json_path: str = None, limit: int = None, target_company
             jobs_active=total_active_jobs,
             jobs_expired=total_expired_jobs,
             errors=errors,
+            company_stats=company_stats,
         )
 
 

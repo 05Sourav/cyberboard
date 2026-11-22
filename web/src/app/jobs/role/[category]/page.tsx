@@ -3,6 +3,7 @@ import Link from 'next/link'
 import type { Metadata } from 'next'
 import { createServerClient } from '@/lib/supabase'
 import { JobCard } from '@/components/JobCard'
+import { dedupeJobs } from '@/lib/utils'
 import { ALL_CATEGORIES, Job } from '@/lib/types'
 
 export const dynamic = 'force-dynamic'
@@ -57,7 +58,7 @@ export default async function CategoryJobsPage({ params }: Props) {
     .eq('category', title)
     .order('first_seen', { ascending: false })
 
-  const jobs: Job[] = rawJobs || []
+  const jobs: Job[] = dedupeJobs(rawJobs || [])
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-8 py-8 flex flex-col w-full">

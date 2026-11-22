@@ -114,3 +114,32 @@ export function countryFromTimezone(): string | null {
     return null
   }
 }
+
+/** Collapse duplicate job listings sharing company, title, and location into a single card. */
+export function dedupeJobs<
+  T extends {
+    title: string
+    location?: string | null
+    companies?: { name?: string; slug?: string } | null
+    company_id?: string
+    company?: string
+  }
+>(jobs: T[]): T[] {
+  const seen = new Set<string>()
+  const result: T[] = []
+
+  for (const job of jobs) {
+    const comp = (job.company || job.company_id || job.companies?.slug || job.companies?.name || '').toLowerCase().trim()
+    const title = (job.title || '').toLowerCase().trim()
+    const loc = (job.location || '').toLowerCase().trim()
+    const key = `${comp}|${title}|${loc}`
+
+    if (!seen.has(key)) {
+      seen.add(key)
+      result.push(job)
+    }
+  }
+
+  return result
+}
+

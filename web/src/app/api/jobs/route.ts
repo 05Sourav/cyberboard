@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient, isSupabaseConfigured } from '@/lib/supabase'
+import { dedupeJobs } from '@/lib/utils'
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
@@ -70,9 +71,10 @@ export async function GET(request: NextRequest) {
       const { data, error, count } = await query
 
       if (!error && data) {
+        const uniqueJobs = dedupeJobs(data)
         return NextResponse.json({
-          jobs: data,
-          total: count || 0,
+          jobs: uniqueJobs,
+          total: uniqueJobs.length,
           page,
           pageSize,
           hasMore: (count || 0) > page * pageSize,

@@ -55,6 +55,40 @@ def test_security_filter_exclusions():
         assert not matched, f"Expected '{title}' ({dept}) to be excluded."
 
 
+def test_audit_tightened_must_exclude():
+    """Verify specific false-positive titles discovered during the audit are excluded."""
+    must_exclude = [
+        ("Security Enterprise Account Executive", ""),
+        ("Security Sales Executive", ""),
+        ("AI Security Sales Executive", ""),
+        ("Specialist Account Executive - Data Security", ""),
+        ("Staff Product Designer - Okta Identity Governance", ""),
+        ("Operations Analyst - US Government Security", "Business Development"),
+        ("Business Development Manager Identity", ""),
+        ("Sr. Staff SRE - Federal Security Clearance", ""),
+        ("GTM Product Marketing Manager Access Security", ""),
+    ]
+    for title, dept in must_exclude:
+        matched, _ = is_security(title, dept)
+        assert not matched, f"Expected '{title}' (dept: '{dept}') to be excluded."
+
+
+def test_audit_tightened_must_keep():
+    """Verify technical security and pre-sales engineering roles are preserved."""
+    must_keep = [
+        ("Senior Security Engineer", ""),
+        ("Staff Product Security Engineer", ""),
+        ("Incident Response Engineer", ""),
+        ("Senior Software Engineer Identity & Access Management", ""),
+        ("Security Sales Engineer", ""),
+        ("Threat Intelligence Engineer", ""),
+    ]
+    for title, dept in must_keep:
+        matched, kw = is_security(title, dept)
+        assert matched, f"Expected '{title}' to be kept, but was excluded."
+        assert kw is not None
+
+
 # ==============================================================================
 # 2. Enrichment Tests (20+ sample titles and locations)
 # ==============================================================================

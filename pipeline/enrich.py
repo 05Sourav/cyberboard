@@ -44,15 +44,51 @@ US_STATES_REGEX = re.compile(
 )
 
 CATEGORIES = [
-    ("Leadership", r"\b(ciso|chief information security|head of security|vp[, ]|vice president|director of security)\b"),
-    ("GRC & Compliance", r"\b(grc|compliance|risk|audit|governance|privacy|policy|iso 27001|soc 2|fedramp|regulatory)\b"),
-    ("Offensive Security", r"\b(pentest\w*|penetration|red team|offensive|exploit|vulnerability research|bug bounty|ethical hacker)\b"),
-    ("Application Security", r"\b(appsec|application security|product security|devsecops|secure code|software security)\b"),
-    ("Cloud Security", r"\b(cloud security|kubernetes security|container security|cspm|infrastructure security|aws security)\b"),
-    ("Identity & Access", r"\b(iam|identity|access management|pam|authentication|authorization|directory)\b"),
-    ("SOC & Incident Response", r"\b(soc|incident|dfir|forensic\w*|threat hunt\w*|detection|analyst|blue team|response|mdr|csirt)\b"),
-    ("Threat Intelligence", r"\b(threat intel\w*|intelligence|malware|reverse engineer\w*|cti)\b"),
-    ("Security Engineering", r"\b(security engineer\w*|security architect\w*|network security|endpoint|cryptograph\w*|detection engineer\w*)\b"),
+    # 1. Leadership: CISO, VP, Director, Head of, Lead, Security Manager
+    ("Leadership", re.compile(
+        r"\b(ciso|chief information security|chief security|head of (security|infosec|trust|cyber)|vp of (security|infosec|cyber)|vice president.*security|director.*security|security.*director|security (?!operations )manager|(?<!operations )manager.*security|lead.*security)\b",
+        re.I
+    )),
+    # 2. Offensive Security: Pentest, Red Team, Exploit, Ethical Hacker, Bug Bounty
+    ("Offensive Security", re.compile(
+        r"\b(pentest\w*|penetration|red team|offensive|exploit|vulnerability research|bug bounty|ethical hacker)\b",
+        re.I
+    )),
+    # 3. Application Security: Product Security, Application Security, DevSecOps, Secure Code
+    ("Application Security", re.compile(
+        r"\b(appsec|application security|product security|devsecops|secure code|software security|code security|static analysis|web security)\b",
+        re.I
+    )),
+    # 4. Cloud Security: Cloud, AWS, GCP, Azure, Kubernetes, Container, Infrastructure
+    ("Cloud Security", re.compile(
+        r"\b(cloud security|kubernetes security|container security|cspm|aws security|azure security|gcp security)\b",
+        re.I
+    )),
+    # 5. Identity & Access: IAM, Access, Identity, PAM, Authentication
+    ("Identity & Access", re.compile(
+        r"\b(iam|identity|access management|pam|authentication|authorization|directory|entra)\b",
+        re.I
+    )),
+    # 6. Threat Intelligence: Threat, Researcher, Research, Intel
+    ("Threat Intelligence", re.compile(
+        r"\b(threat intel\w*|threat|security research\w*|vulnerability research\w*|intel|malware|reverse engineer\w*|cti|security scientist)\b",
+        re.I
+    )),
+    # 7. GRC & Compliance: Compliance, GRC, Risk, Audit, FedRAMP, Trust, Assurance
+    ("GRC & Compliance", re.compile(
+        r"\b(grc|compliance|risk|audit\w*|governance|privacy|policy|iso 27001|soc 2|fedramp|regulatory|trust|assurance)\b",
+        re.I
+    )),
+    # 8. SOC & Incident Response: Security Operations, SecOps, Detection, EDR, Incident, Vulnerability Management, SIRT, Analyst
+    ("SOC & Incident Response", re.compile(
+        r"\b(security operations|secops|detection|edr|incident|vulnerability management|vulnerability|sirt|soc(?! 2\b)|blue team|csirt|dfir|forensic\w*|threat hunt\w*|mdr|security analyst|defensive security|information security analyst|cyber defense)\b",
+        re.I
+    )),
+    # 9. Security Engineering: Platform, Infrastructure, Architect, Consultant, Professional Services, Systems, Software Engineer - Security
+    ("Security Engineering", re.compile(
+        r"\b(security engineer\w*|security architect\w*|network security|endpoint|cryptograph\w*|detection engineer\w*|platform|infrastructure|architect|consultant|professional services|solutions architect|sales engineer|technical account manager|customer success engineer|software engineer.*security|security.*software engineer|engineer.*security|security.*engineer|systems engineer.*security|security automation|security tool\w*|security specialist|advisor)\b",
+        re.I
+    )),
 ]
 
 LEVELS = [
@@ -104,7 +140,7 @@ def work_mode_for(location: str, remote_flag: Any) -> str:
 def worldwide_flags(location: str, mode: str, countries_found: List[str]) -> Tuple[bool, bool]:
     loc = (location or "").lower()
     is_remote = mode == "Remote"
-    
+
     # Worldwide: explicitly global, anywhere, worldwide or purely 'remote'
     is_worldwide = is_remote and bool(
         "global" in loc or "worldwide" in loc or "anywhere" in loc or loc.strip() in ("remote", "virtual", "remote / virtual")
@@ -117,9 +153,9 @@ def worldwide_flags(location: str, mode: str, countries_found: List[str]) -> Tup
 
 
 def category_for(title: str, department: str = "") -> str:
-    text = f"{title or ''} {department or ''}".lower()
-    for name, pat in CATEGORIES:
-        if re.search(pat, text):
+    text = f"{title or ''} {department or ''}"
+    for name, regex in CATEGORIES:
+        if regex.search(text):
             return name
     return "Other Security"
 

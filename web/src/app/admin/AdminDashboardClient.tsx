@@ -6,6 +6,7 @@ import { toggleCompanyBlockAction, resolveRemovalRequestAction, signOutAdminActi
 interface Props {
   adminEmail: string
   companies: any[]
+  companiesWithActiveJobs: number
   promotions: any[]
   removals: any[]
   lastRun: any | null
@@ -14,6 +15,7 @@ interface Props {
 export function AdminDashboardClient({
   adminEmail,
   companies: initialCompanies,
+  companiesWithActiveJobs,
   promotions,
   removals: initialRemovals,
   lastRun,
@@ -104,9 +106,9 @@ export function AdminDashboardClient({
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="bg-white border border-[#D8E0E6] rounded-xl p-5">
               <div className="text-[12px] font-mono uppercase text-[#58697A] mb-1">Total Employers</div>
-              <div className="text-[28px] font-bold text-[#0F1F2A]">{companies.length}</div>
+              <div className="text-[28px] font-bold text-[#0F1F2A]">{companiesWithActiveJobs}</div>
               <div className="text-[12px] text-[#58697A] mt-1">
-                {companies.filter((c) => !c.blocked).length} active · {companies.filter((c) => c.blocked).length} blocked
+                with active roles · {companies.length} in roster · {companies.filter((c) => c.blocked).length} blocked
               </div>
             </div>
             <div className="bg-white border border-[#D8E0E6] rounded-xl p-5">

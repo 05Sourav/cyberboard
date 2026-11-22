@@ -19,6 +19,13 @@ export default async function AdminPage() {
     .select('id, name, slug, ats, domain, blocked')
     .order('name', { ascending: true })
 
+  // 1b. Count companies with at least 1 active job
+  const { data: activeJobCompanies } = await supabase
+    .from('jobs')
+    .select('company_id')
+    .eq('status', 'active')
+  const companiesWithActiveJobs = new Set((activeJobCompanies || []).map((j: { company_id: string }) => j.company_id)).size
+
   // 2. Fetch promotions
   const { data: promotions } = await supabase
     .from('promotions')
@@ -43,6 +50,7 @@ export default async function AdminPage() {
     <AdminDashboardClient
       adminEmail={auth.email || 'Admin'}
       companies={companies || []}
+      companiesWithActiveJobs={companiesWithActiveJobs}
       promotions={promotions || []}
       removals={removals || []}
       lastRun={runs && runs.length > 0 ? runs[0] : null}

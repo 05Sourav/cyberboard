@@ -1,0 +1,384 @@
+# Candidates for discovery (pipeline/discover_roster.py)
+# Format: name | hint_ats | hint_slug | domain | hq_country | notes
+
+# ── Previously-failed entries (retry with alternate slugs/ATS) ─────────────────
+CrowdStrike|greenhouse|crowdstrikeinc|crowdstrike.com|United States|try crowdstrikeinc; may be on Workday now
+Snyk|greenhouse|snyk|snyk.io|United Kingdom|retry greenhouse slug
+1Password|lever|1password|1password.com|Canada|retry lever US + EU
+Vanta|greenhouse|vanta|vanta.com|United States|retry greenhouse
+SentinelOne|greenhouse|sentinelone|sentinelone.com|United States|retry
+HackerOne|greenhouse|hackerone|hackerone.com|United States|retry
+Teleport|greenhouse|teleport|goteleport.com|United States|try "teleport" slug too
+Chainguard|ashby|chainguard|chainguard.dev|United States|retry ashby
+Chainalysis|greenhouse|chainalysis|chainalysis.com|United States|retry
+Arctic Wolf|greenhouse|arcticwolf|arcticwolf.com|United States|try arcticwolf slug
+Tenable|greenhouse|tenableinc|tenable.com|United States|try tenableinc
+Rapid7|greenhouse|rapid7|rapid7.com|United States|retry
+Qualys|greenhouse|qualys|qualys.com|United States|retry
+BitSight|greenhouse|bitsight|bitsight.com|United States|retry
+Lacework|greenhouse|lacework|lacework.com|United States|retry (now part of Fortinet)
+Aqua Security|greenhouse|aqua|aquasec.com|Israel|try "aqua" slug
+Sonatype|greenhouse|sonatype|sonatype.com|United States|retry
+Checkmarx|greenhouse|checkmarx|checkmarx.com|Israel|retry; may be on Ashby
+Sysdig|greenhouse|sysdig|sysdig.com|United States|retry
+Illumio|greenhouse|illumio|illumio.com|United States|retry
+Cybereason|greenhouse|cybereason|cybereason.com|United States|retry (layoffs; might be gone)
+Deepwatch|greenhouse|deepwatch|deepwatch.com|United States|retry
+SailPoint|greenhouse|sailpoint|sailpoint.com|United States|retry (now private)
+Kroll|greenhouse|kroll|kroll.com|United States|retry
+HashiCorp|lever|hashicorp|hashicorp.com|United States|try lever (IBM acq)
+Splunk|lever|splunk|splunk.com|United States|try lever (Cisco acq)
+GitHub|greenhouse|github|github.com|United States|try "github" on GH careers
+Auth0|greenhouse|auth0|auth0.com|United States|merged into Okta; skip or redirect
+NetSPI|greenhouse|netspi|netspi.com|United States|retry
+Coalfire|greenhouse|coalfire|coalfire.com|United States|retry
+ReliaQuest|greenhouse|reliaquest|reliaquest.com|United States|retry
+
+# ── Security Vendors: Endpoint / EDR ──────────────────────────────────────────
+Malwarebytes|greenhouse|malwarebytes|malwarebytes.com|United States|
+Cylance|greenhouse|cylance|cylance.com|United States|part of BlackBerry
+Tanium|greenhouse|tanium|tanium.com|United States|
+Cynet|ashby|cynet|cynet.com|Israel|
+ThreatLocker|greenhouse|threatlocker|threatlocker.com|United States|
+Morphisec|greenhouse|morphisec|morphisec.com|Israel|
+Deep Instinct|greenhouse|deepinstinct|deepinstinct.com|Israel|
+Trellix|greenhouse|trellix|trellix.com|United States|formerly McAfee Enterprise
+Secureworks|greenhouse|secureworks|secureworks.com|United States|
+Carbon Black|greenhouse|carbonblack|carbonblack.com|United States|part of VMware/Broadcom
+Cyberark|greenhouse|cyberark|cyberark.com|Israel|
+Delinea|greenhouse|delinea|delinea.com|United States|formerly Thycotic+Centrify
+BeyondTrust|greenhouse|beyondtrust|beyondtrust.com|United States|
+Varonis|greenhouse|varonis|varonis.com|United States|
+Tetragon (Isovalent)|greenhouse|isovalent|isovalent.com|United States|
+Exabeam|greenhouse|exabeam|exabeam.com|United States|
+LogRhythm|greenhouse|logrhythm|logrhythm.com|United States|merged with Exabeam
+Datto|greenhouse|datto|datto.com|United States|
+
+# ── Security Vendors: Cloud / CNAPP / CSPM ───────────────────────────────────
+Lacework|greenhouse|lacework|lacework.com|United States|Fortinet acq; still posts
+Prisma Cloud (Palo Alto)|greenhouse|paloaltonetworks|paloaltonetworks.com|United States|
+Ermetic|greenhouse|ermetic|ermetic.com|Israel|
+Lasso Security|greenhouse|lasso|lasso.security|Israel|
+Laminar Security|greenhouse|laminar|laminar.security|Israel|acq by Rubrik
+Rubrik|greenhouse|rubrik|rubrik.com|United States|
+Cohesity|greenhouse|cohesity|cohesity.com|United States|
+Bridgecrew|greenhouse|bridgecrew|bridgecrew.io|United States|acq by Palo Alto
+Lightspin|greenhouse|lightspin|lightspin.io|Israel|acq by Cisco
+Wiz|greenhouse|wizinc|wiz.io|United States|already in roster; skip
+Upwind Security|ashby|upwind|upwind.io|Israel|
+Cyera|greenhouse|cyera|cyera.io|United States|
+Dig Security|greenhouse|digsecurity|dig.security|Israel|acq by Palo Alto
+RAD Security|ashby|radsecurity|rad.security|United States|
+
+# ── Security Vendors: Identity / IAM ─────────────────────────────────────────
+Ping Identity|greenhouse|pingidentity|pingidentity.com|United States|
+ForgeRock|greenhouse|forgerock|forgerock.com|United States|acq by Ping Identity
+CyberArk|greenhouse|cyberark|cyberark.com|Israel|PAM/IAM vendor
+Stytch|greenhouse|stytch|stytch.com|United States|
+WorkOS|greenhouse|workos|workos.com|United States|
+Authzed|ashby|authzed|authzed.com|United States|
+HYPR|greenhouse|hypr|hypr.com|United States|
+Yubico|greenhouse|yubico|yubico.com|United States|
+Beyond Identity|greenhouse|beyondidentity|beyondidentity.com|United States|
+
+# ── Security Vendors: AppSec / SAST / DAST ───────────────────────────────────
+Veracode|greenhouse|veracode|veracode.com|United States|already retrying
+StackHawk|greenhouse|stackhawk|stackhawk.com|United States|
+Invicti|greenhouse|invicti|invicti.com|United States|formerly Acunetix+Netsparker
+Synopsys|greenhouse|synopsys|synopsys.com|United States|
+Mend.io|greenhouse|mend|mend.io|Israel|formerly WhiteSource
+Finite State|greenhouse|finitestate|finitestate.io|United States|
+Cobalt|greenhouse|cobalt|cobalt.io|United States|PtaaS
+Doyensec|greenhouse|doyensec|doyensec.com|Switzerland|
+NowSecure|greenhouse|nowsecure|nowsecure.com|United States|mobile AppSec
+Bright Security|greenhouse|brightsecurity|brightsec.com|Israel|
+
+# ── Security Vendors: GRC / Compliance ───────────────────────────────────────
+Drata|greenhouse|drata|drata.com|United States|
+Secureframe|greenhouse|secureframe|secureframe.com|United States|
+Hyperproof|greenhouse|hyperproof|hyperproof.io|United States|
+Strike Graph|greenhouse|strikegraph|strikegraph.com|United States|
+LogicGate|greenhouse|logicgate|logicgate.com|United States|
+ServiceNow|greenhouse|servicenow|servicenow.com|United States|GRC+ITSM
+Archer|greenhouse|archer|archerirm.com|United States|
+Fusion Risk Management|greenhouse|fusionrisk|fusionrm.com|United States|
+MetricStream|greenhouse|metricstream|metricstream.com|United States|
+
+# ── Security Vendors: Threat Intel / OSINT ───────────────────────────────────
+Flashpoint|greenhouse|flashpoint|flashpoint.io|United States|
+Intel 471|greenhouse|intel471|intel471.com|United States|
+Mandiant|greenhouse|mandiant|mandiant.com|United States|acq by Google
+Team Cymru|greenhouse|teamcymru|team-cymru.com|United States|
+GreyNoise|greenhouse|greynoise|greynoise.io|United States|
+Feedly|greenhouse|feedly|feedly.com|United States|threat intel
+ZeroFox|greenhouse|zerofox|zerofox.com|United States|
+Sixgill|greenhouse|sixgill|cybersixgill.com|Israel|
+Stairwell|greenhouse|stairwell|stairwell.io|United States|
+
+# ── Security Vendors: MDR / MSSP ─────────────────────────────────────────────
+Arctic Wolf|greenhouse|arcticwolf|arcticwolf.com|United States|retry
+Pondurance|greenhouse|pondurance|pondurance.com|United States|
+Red Canary|greenhouse|redcanary|redcanary.com|United States|
+Netsurion|greenhouse|netsurion|netsurion.com|United States|
+eSentire|greenhouse|esentire|esentire.com|Canada|
+Critical Start|greenhouse|criticalstart|criticalstart.com|United States|
+Optiv|greenhouse|optiv|optiv.com|United States|
+GuidePoint Security|greenhouse|guidepointsecurity|guidepointsecurity.com|United States|
+Trustwave|greenhouse|trustwave|trustwave.com|United States|
+Nuspire|greenhouse|nuspire|nuspire.com|United States|
+
+# ── Security Vendors: Offensive / Bug Bounty ─────────────────────────────────
+HackerOne|greenhouse|hackerone|hackerone.com|United States|retry
+Cobalt|greenhouse|cobalt|cobalt.io|United States|PtaaS
+Synack|greenhouse|synack|synack.com|United States|
+Praetorian|greenhouse|praetorian|praetorian.com|United States|
+NCC Group|greenhouse|nccgroup|nccgroup.com|United Kingdom|
+Trustedsec|greenhouse|trustedsec|trustedsec.com|United States|
+
+# ── Security Vendors: Network / Firewall / SASE ──────────────────────────────
+Palo Alto Networks|greenhouse|paloaltonetworks|paloaltonetworks.com|United States|
+Fortinet|greenhouse|fortinet|fortinet.com|United States|
+Check Point|greenhouse|checkpoint|checkpoint.com|Israel|
+Zscaler|greenhouse|zscaler|zscaler.com|United States|
+Netskope|greenhouse|netskope|netskope.com|United States|
+Versa Networks|greenhouse|versanetworks|versa-networks.com|United States|
+Nile|greenhouse|nilesecure|nile.com|United States|
+Airgap Networks|greenhouse|airgap|airgap.io|United States|
+
+# ── Security Vendors: Email / Phishing ───────────────────────────────────────
+Proofpoint|greenhouse|proofpoint|proofpoint.com|United States|
+Mimecast|greenhouse|mimecast|mimecast.com|United Kingdom|
+Cofense|greenhouse|cofense|cofense.com|United States|
+Egress|greenhouse|egress|egress.com|United Kingdom|
+Ironscales|greenhouse|ironscales|ironscales.com|Israel|
+SlashNext|greenhouse|slashnext|slashnext.com|United States|
+
+# ── Security Vendors: Data / DSPM ────────────────────────────────────────────
+BigID|greenhouse|bigid|bigid.com|United States|
+Securiti|greenhouse|securiti|securiti.ai|United States|
+Normalyze|greenhouse|normalyze|normalyze.io|United States|acq by Zscaler
+Open Raven|greenhouse|openraven|openraven.com|United States|
+
+# ── Security Vendors: PKI / Secrets / Crypto ─────────────────────────────────
+Venafi|greenhouse|venafi|venafi.com|United States|acq by CyberArk
+Keyfactor|greenhouse|keyfactor|keyfactor.com|United States|
+SSH Communications|greenhouse|ssh|ssh.com|Finland|
+HashiCorp Vault team|lever|hashicorp|hashicorp.com|United States|try lever
+Infisical|greenhouse|infisical|infisical.com|United States|
+Doppler|greenhouse|doppler|doppler.com|United States|
+
+# ── Security Vendors: SIEM / SOAR / XDR ─────────────────────────────────────
+Securonix|greenhouse|securonix|securonix.com|United States|
+Sumo Logic|greenhouse|sumologic|sumologic.com|United States|
+IBM QRadar (IBM Security)|greenhouse|ibm|ibm.com|United States|
+Devo|greenhouse|devo|devo.com|Spain|
+Siemplify|greenhouse|siemplify|siemplify.com|Israel|acq by Google; check status
+Cyware|greenhouse|cyware|cyware.com|United States|
+Picus Security|greenhouse|picussecurity|picussecurity.com|Turkey|
+Vectra AI|greenhouse|vectra|vectra.ai|United States|
+Darktrace|greenhouse|darktrace|darktrace.com|United Kingdom|
+
+# ── Cloud / Infra / DevTools ──────────────────────────────────────────────────
+HashiCorp|lever|hashicorp|hashicorp.com|United States|IBM acq; try lever
+Terraform Cloud|lever|hashicorp|hashicorp.com|United States|same slug
+Pulumi|greenhouse|pulumi|pulumi.com|United States|
+Doppler|greenhouse|doppler|doppler.com|United States|
+Render|greenhouse|render|render.com|United States|
+Fly.io|ashby|fly|fly.io|United States|
+Cloudsmith|greenhouse|cloudsmith|cloudsmith.io|United Kingdom|
+Socket Security|greenhouse|socket|socket.dev|United States|
+Chainguard|ashby|chainguard|chainguard.dev|United States|retry ashby
+Anchore|greenhouse|anchore|anchore.io|United States|
+Styra|greenhouse|styra|styra.com|United States|OPA creator
+Nirmata|greenhouse|nirmata|nirmata.com|United States|
+Stacklok|greenhouse|stacklok|stacklok.com|United States|
+Rezilion|greenhouse|rezilion|rezilion.com|Israel|
+Slim.AI|greenhouse|slimai|slim.ai|United States|
+Cycode|greenhouse|cycode|cycode.io|Israel|
+GitGuardian|greenhouse|gitguardian|gitguardian.com|France|
+Legit Security|greenhouse|legitsecurity|legitsecurity.com|Israel|
+Endor Labs|greenhouse|endorlabs|endorlabs.com|United States|
+Ox Security|greenhouse|oxsecurity|ox.security|Israel|
+Apiiro|greenhouse|apiiro|apiiro.com|Israel|
+Phylum|greenhouse|phylum|phylum.io|United States|
+Tines|greenhouse|tines|tines.com|Ireland|SOAR
+Torq|greenhouse|torq|torq.io|Israel|SOAR
+Swimlane|greenhouse|swimlane|swimlane.com|United States|SOAR
+
+# ── Big Tech / Cloud Hyperscalers ─────────────────────────────────────────────
+Google|greenhouse|google|google.com|United States|
+Amazon|greenhouse|amazon|amazon.com|United States|AWS security jobs
+Microsoft|greenhouse|microsoft|microsoft.com|United States|try GH; likely Workday
+Stripe|greenhouse|stripe|stripe.com|United States|
+Twilio|greenhouse|twilio|twilio.com|United States|
+Databricks|greenhouse|databricks|databricks.com|United States|
+Snowflake|greenhouse|snowflake|snowflake.com|United States|
+Confluent|greenhouse|confluent|confluent.io|United States|
+Elastic|greenhouse|elastic|elastic.co|United States|
+MongoDB|greenhouse|mongodb|mongodb.com|United States|
+Cloudflare|greenhouse|cloudflare|cloudflare.com|United States|already in roster
+Fastly|greenhouse|fastly|fastly.com|United States|
+Vercel|greenhouse|vercel|vercel.com|United States|
+Neon|ashby|neon|neon.tech|United States|
+PlanetScale|greenhouse|planetscale|planetscale.com|United States|
+Supabase|greenhouse|supabase|supabase.io|United States|
+Linear|ashby|linear|linear.app|United States|
+Notion|greenhouse|notion|notion.so|United States|
+Figma|greenhouse|figma|figma.com|United States|
+Miro|greenhouse|miro|miro.com|Netherlands|
+Atlassian|greenhouse|atlassian|atlassian.com|Australia|
+Shopify|greenhouse|shopify|shopify.com|Canada|
+Salesforce|greenhouse|salesforce|salesforce.com|United States|
+HubSpot|greenhouse|hubspot|hubspot.com|United States|
+Zendesk|greenhouse|zendesk|zendesk.com|United States|
+Box|greenhouse|boxinc|box.com|United States|
+Dropbox|greenhouse|dropbox|dropbox.com|United States|
+Airtable|greenhouse|airtable|airtable.com|United States|
+Asana|greenhouse|asana|asana.com|United States|
+Intercom|greenhouse|intercom|intercom.com|Ireland|
+Cloudflare|greenhouse|cloudflare|cloudflare.com|United States|dupe; skip
+Zoom|greenhouse|zoom|zoom.us|United States|
+Slack|greenhouse|slack|slack.com|United States|acq by Salesforce
+1Password|lever|1password|1password.com|Canada|retry
+
+# ── Fintech / Crypto ───────────────────────────────────────────────────────────
+Coinbase|greenhouse|coinbase|coinbase.com|United States|
+Kraken|greenhouse|kraken|kraken.com|United States|
+Binance|greenhouse|binance|binance.com|Cayman Islands|
+Chainalysis|greenhouse|chainalysis|chainalysis.com|United States|retry
+TRM Labs|greenhouse|trmlabs|trm.io|United States|
+Elliptic|greenhouse|elliptic|elliptic.co|United Kingdom|
+Anchorage Digital|greenhouse|anchoragecloud|anchorage.com|United States|
+Plaid|greenhouse|plaid|plaid.com|United States|
+Brex|greenhouse|brex|brex.com|United States|
+Ripple|greenhouse|ripple|ripple.com|United States|
+Gemini|greenhouse|gemini|gemini.com|United States|
+Circle|greenhouse|circle|circle.com|United States|
+Paxos|greenhouse|paxos|paxos.com|United States|
+Alchemy|greenhouse|alchemy|alchemy.com|United States|
+Fireblocks|greenhouse|fireblocks|fireblocks.com|Israel|
+BlockFi|greenhouse|blockfi|blockfi.com|United States|bankrupt; skip
+Klarna|greenhouse|klarna|klarna.com|Sweden|
+Stripe|greenhouse|stripe|stripe.com|United States|
+Adyen|greenhouse|adyen|adyen.com|Netherlands|
+Checkout.com|greenhouse|checkoutcom|checkout.com|United Kingdom|
+Marqeta|greenhouse|marqeta|marqeta.com|United States|
+Nuvei|greenhouse|nuvei|nuvei.com|Canada|
+Payoneer|greenhouse|payoneer|payoneer.com|United States|
+Wise|greenhouse|wise|wise.com|United Kingdom|
+Revolut|greenhouse|revolut|revolut.com|United Kingdom|
+N26|greenhouse|n26|n26.com|Germany|
+Monzo|greenhouse|monzo|monzo.com|United Kingdom|
+Nubank|greenhouse|nubank|nubank.com.br|Brazil|
+Chime|greenhouse|chime|chime.com|United States|
+
+# ── Healthcare / BioTech (security-relevant) ──────────────────────────────────
+Epic Systems|greenhouse|epic|epic.com|United States|
+Veeva Systems|greenhouse|veeva|veeva.com|United States|
+Palantir|greenhouse|palantir|palantir.com|United States|
+Tempus|greenhouse|tempus|tempus.com|United States|
+
+# ── Consulting / Advisory ──────────────────────────────────────────────────────
+Booz Allen Hamilton|greenhouse|boozallen|boozallenhamilton.com|United States|
+Leidos|greenhouse|leidos|leidos.com|United States|
+MITRE|greenhouse|mitre|mitre.org|United States|
+Accenture Security|greenhouse|accenture|accenture.com|Ireland|
+Deloitte|greenhouse|deloitte|deloitte.com|United States|
+EY|greenhouse|ey|ey.com|United Kingdom|
+PwC|greenhouse|pwc|pwc.com|United Kingdom|
+KPMG|greenhouse|kpmg|kpmg.com|Netherlands|
+Mandiant/Google|greenhouse|mandiant|mandiant.com|United States|acq by Google
+CrowdStrike Services|greenhouse|crowdstrikeinc|crowdstrike.com|United States|try inc suffix
+Secureworks|greenhouse|secureworks|secureworks.com|United States|
+
+# ── Aerospace / Defense / Gov-adjacent ───────────────────────────────────────
+Northrop Grumman|greenhouse|northropgrumman|northropgrumman.com|United States|
+Raytheon|greenhouse|raytheon|rtx.com|United States|part of RTX
+BAE Systems|greenhouse|baesystems|baesystems.com|United Kingdom|
+CACI|greenhouse|caci|caci.com|United States|
+SAIC|greenhouse|saic|saic.com|United States|
+Parsons|greenhouse|parsons|parsons.com|United States|
+Peraton|greenhouse|peraton|peraton.com|United States|
+Noblis|greenhouse|noblis|noblis.org|United States|
+
+# ── Telecom / ISP ─────────────────────────────────────────────────────────────
+Comcast Technology Solutions|greenhouse|comcast|comcast.com|United States|
+Verizon|greenhouse|verizon|verizon.com|United States|
+Lumen|greenhouse|lumen|lumen.com|United States|
+
+# ── Gaming / Media ────────────────────────────────────────────────────────────
+Riot Games|greenhouse|riotgames|riotgames.com|United States|
+Discord|greenhouse|discord|discord.com|United States|
+Roblox|greenhouse|roblox|roblox.com|United States|
+Take-Two Interactive|greenhouse|taketwo|take2games.com|United States|
+Unity|greenhouse|unity|unity.com|United States|
+
+# ── Automotive / IoT ──────────────────────────────────────────────────────────
+Upstream Security|greenhouse|upstream|upstream.auto|Israel|automotive cyber
+Karamba Security|greenhouse|karamba|karambasecurity.com|Israel|
+Argus Cyber Security|greenhouse|argus|argus-sec.com|Israel|
+Moveworks|greenhouse|moveworks|moveworks.com|United States|
+
+# ── Additional Ashby-native companies ────────────────────────────────────────
+Drata|ashby|drata|drata.com|United States|GRC; also try greenhouse
+Veza|ashby|veza|veza.com|United States|identity governance
+Oligo Security|ashby|oligo|oligo.security|Israel|runtime AppSec
+Noname Security|ashby|noname|nonamesecurity.com|United States|API security; acq by Akamai
+Salt Security|ashby|saltcecurity|salt.security|United States|API security
+Corelight|ashby|corelight|corelight.com|United States|NDR
+RunZero|ashby|runzero|runzero.com|United States|asset discovery
+Censys|ashby|censys|censys.io|United States|attack surface mgmt
+Nucleus Security|ashby|nucleussecurity|nucleussecurity.com|United States|vuln mgmt
+PlexTrac|ashby|plextrac|plextrac.com|United States|pen test mgmt
+Noq Platform|ashby|noq|noq.dev|United States|cloud IAM
+Ermetic|ashby|ermetic|ermetic.com|Israel|cloud IAM; acq by Tenable
+Cyolo|ashby|cyolo|cyolo.io|Israel|zero trust access
+Secure Code Warrior|ashby|securecodewarrior|securecodewarrior.com|Australia|dev security training
+Privacera|ashby|privacera|privacera.com|United States|data governance
+Tidal Cyber|ashby|tidalcyber|tidalcyber.com|United States|threat intel
+Opus Security|ashby|opussecurity|opus.security|Israel|vuln management
+Island|ashby|island|island.io|United States|enterprise browser
+Lumu Technologies|ashby|lumu|lumu.io|Colombia|threat detection
+Cyolo|ashby|cyolo|cyolo.io|Israel|zero trust
+
+# ── Lever-native companies ────────────────────────────────────────────────────
+1Password|lever|1password|1password.com|Canada|retry
+Snyk|lever|snyk|snyk.io|United Kingdom|try lever
+SentinelOne|lever|sentinelone|sentinelone.com|United States|try lever
+HackerOne|lever|hackerone|hackerone.com|United States|try lever
+Lacework|lever|lacework|lacework.com|United States|try lever
+Illumio|lever|illumio|illumio.com|United States|try lever
+SailPoint|lever|sailpoint|sailpoint.com|United States|try lever
+Cybereason|lever|cybereason|cybereason.com|United States|try lever
+LogicMonitor|lever|logicmonitor|logicmonitor.com|United States|
+Kong|lever|kong|konghq.com|United States|API gateway with security
+Navan|lever|navan|navan.com|United States|
+Brex|lever|brex|brex.com|United States|
+Scale AI|lever|scaleai|scale.com|United States|
+Benchling|lever|benchling|benchling.com|United States|
+Gem|lever|gem|gem.com|United States|
+Dbt Labs|lever|dbtlabs|getdbt.com|United States|
+Faire|lever|faire|faire.com|United States|
+Persona|lever|persona|withpersona.com|United States|identity verification
+Trulioo|lever|trulioo|trulioo.com|Canada|identity verification
+Socure|lever|socure|socure.com|United States|identity verification
+Jumio|lever|jumio|jumio.com|United States|identity
+Feedzai|lever|feedzai|feedzai.com|Portugal|fraud/risk
+Unit21|lever|unit21|unit21.co|United States|fraud/AML
+Sardine|lever|sardine|sardine.ai|United States|fraud
+Sentilink|lever|sentilink|sentilink.com|United States|identity fraud
+
+# ── Lever EU ─────────────────────────────────────────────────────────────────
+Snyk|lever_eu|snyk|snyk.io|United Kingdom|EU lever try
+Deliveroo|lever_eu|deliveroo|deliveroo.com|United Kingdom|
+Klarna|lever_eu|klarna|klarna.com|Sweden|
+N26|lever_eu|n26|n26.com|Germany|
+Revolut|lever_eu|revolut|revolut.com|United Kingdom|
+Monzo|lever_eu|monzo|monzo.com|United Kingdom|
+Darktrace|lever_eu|darktrace|darktrace.com|United Kingdom|try EU lever
+Egress|lever_eu|egress|egress.com|United Kingdom|try EU
+NCC Group|lever_eu|nccgroup|nccgroup.com|United Kingdom|try EU
+Deliveroo|lever_eu|deliveroo|deliveroo.com|United Kingdom|
+Feedzai|lever_eu|feedzai|feedzai.com|Portugal|
+Immunefi|lever_eu|immunefi|immunefi.com|Luxembourg|web3 bug bounty
+

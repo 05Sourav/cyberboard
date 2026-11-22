@@ -18,9 +18,14 @@ SUPABASE_KEY = os.environ.get("SUPABASE_SERVICE_ROLE_KEY") or os.environ.get("SU
 _client = None
 
 
-def get_client():
+def reset_client():
     global _client
-    if _client is None:
+    _client = None
+
+
+def get_client(force_new: bool = False):
+    global _client
+    if force_new or _client is None:
         if not SUPABASE_URL or not SUPABASE_KEY:
             raise ValueError("SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be set in the environment.")
         from supabase import create_client
@@ -30,33 +35,39 @@ def get_client():
 
 def ensure_company(company_meta: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     """Get or insert company in companies table. If blocked, return None to skip."""
-    client = get_client()
     slug = company_meta["slug"]
-    
-    # Query existing company
-    res = client.table("companies").select("*").eq("slug", slug).execute()
-    if res.data and len(res.data) > 0:
-        c = res.data[0]
-        if c.get("blocked"):
-            # Ensure its jobs are marked 'removed'
-            client.table("jobs").update({"status": "removed"}).eq("company_id", c["id"]).execute()
-            return None
-        return c
+    for attempt in range(2):
+        try:
+            client = get_client()
+            # Query existing company
+            res = client.table("companies").select("*").eq("slug", slug).execute()
+            if res.data and len(res.data) > 0:
+                c = res.data[0]
+                if c.get("blocked"):
+                    # Ensure its jobs are marked 'removed'
+                    client.table("jobs").update({"status": "removed"}).eq("company_id", c["id"]).execute()
+                    return None
+                return c
 
-    # Insert new company
-    payload = {
-        "slug": slug,
-        "name": company_meta.get("name", slug),
-        "ats": company_meta.get("ats", "greenhouse"),
-        "lever_host": company_meta.get("lever_host"),
-        "domain": company_meta.get("domain"),
-        "hq_country": company_meta.get("hq_country"),
-        "blocked": False,
-    }
-    insert_res = client.table("companies").insert(payload).execute()
-    if insert_res.data and len(insert_res.data) > 0:
-        return insert_res.data[0]
-    return None
+            # Insert new company
+            payload = {
+                "slug": slug,
+                "name": company_meta.get("name", slug),
+                "ats": company_meta.get("ats", "greenhouse"),
+                "lever_host": company_meta.get("lever_host"),
+                "domain": company_meta.get("domain"),
+                "hq_country": company_meta.get("hq_country"),
+                "blocked": False,
+            }
+            insert_res = client.table("companies").insert(payload).execute()
+            if insert_res.data and len(insert_res.data) > 0:
+                return insert_res.data[0]
+            return None
+        except Exception as e:
+            reset_client()
+            if attempt == 1:
+                raise
+
 
 
 def sync_company_jobs(
@@ -68,7 +79,6 @@ def sync_company_jobs(
     """Upsert security jobs, apply 80% safeguard, and expire vanished roles.
     Returns (num_upserted, num_expired, warning_or_error_msg).
     """
-    client = get_client()
     company_id = company_row["id"]
     company_name = company_row["name"]
 
@@ -76,69 +86,87 @@ def sync_company_jobs(
         # Empty feed safeguard: do not expire anything
         return 0, 0, f"Empty feed for {company_name}; expiry skipped"
 
-    # Fetch currently active job count for this company to check 80% drop safeguard
-    existing_res = client.table("jobs") \
-        .select("id, external_id", count="exact") \
-        .eq("company_id", company_id) \
-        .eq("status", "active") \
-        .execute()
-    
-    prev_active_count = existing_res.count if existing_res.count is not None else len(existing_res.data or [])
+    for attempt in range(2):
+        try:
+            client = get_client()
+            # Fetch currently active job count for this company to check 80% drop safeguard
+            existing_res = client.table("jobs") \
+                .select("id, external_id", count="exact") \
+                .eq("company_id", company_id) \
+                .eq("status", "active") \
+                .execute()
+            
+            prev_active_count = existing_res.count if existing_res.count is not None else len(existing_res.data or [])
 
-    # Prepare upsert batch
-    upsert_rows = []
-    for j in jobs:
-        row = {
-            "source": source,
-            "company_id": company_id,
-            "external_id": str(j["external_id"]),
-            "title": j["title"],
-            "location": j.get("location"),
-            "countries": j.get("countries", []),
-            "work_mode": j.get("work_mode", "On-site"),
-            "worldwide": j.get("worldwide", False),
-            "probably_worldwide": j.get("probably_worldwide", False),
-            "department": j.get("department"),
-            "category": j.get("category", "Other Security"),
-            "level": j.get("level", "Mid-level"),
-            "apply_url": j.get("apply_url", ""),
-            "posted_at": j.get("posted_at"),
-            "salary_min": j.get("salary_min"),
-            "salary_max": j.get("salary_max"),
-            "salary_currency": j.get("salary_currency"),
-            "salary_text": j.get("salary_text"),
-            "status": "active",
-            "last_seen": run_ts,
-        }
-        upsert_rows.append(row)
+            # Fetch any jobs marked 'excluded' so normal runs never reactivate them
+            excluded_res = client.table("jobs") \
+                .select("external_id") \
+                .eq("company_id", company_id) \
+                .eq("status", "excluded") \
+                .execute()
+            excluded_external_ids = {str(r["external_id"]) for r in (excluded_res.data or [])}
 
-    if upsert_rows:
-        # Upsert in chunks to avoid payload limits
-        chunk_size = 50
-        for i in range(0, len(upsert_rows), chunk_size):
-            chunk = upsert_rows[i:i + chunk_size]
-            client.table("jobs").upsert(
-                chunk,
-                on_conflict="source,company_id,external_id"
-            ).execute()
+            # Prepare upsert batch (skipping any permanently excluded external IDs)
+            upsert_rows = []
+            for j in jobs:
+                ext_id = str(j["external_id"])
+                if ext_id in excluded_external_ids:
+                    continue
+                row = {
+                    "source": source,
+                    "company_id": company_id,
+                    "external_id": ext_id,
+                    "title": j["title"],
+                    "location": j.get("location"),
+                    "countries": j.get("countries", []),
+                    "work_mode": j.get("work_mode", "On-site"),
+                    "worldwide": j.get("worldwide", False),
+                    "probably_worldwide": j.get("probably_worldwide", False),
+                    "department": j.get("department"),
+                    "category": j.get("category", "Other Security"),
+                    "level": j.get("level", "Mid-level"),
+                    "apply_url": j.get("apply_url", ""),
+                    "posted_at": j.get("posted_at"),
+                    "salary_min": j.get("salary_min"),
+                    "salary_max": j.get("salary_max"),
+                    "salary_currency": j.get("salary_currency"),
+                    "salary_text": j.get("salary_text"),
+                    "status": "active",
+                    "last_seen": run_ts,
+                }
+                upsert_rows.append(row)
 
-    # Safeguard check: If count drops by > 80%, skip expiry
-    warning = None
-    new_count = len(upsert_rows)
-    if prev_active_count >= 5 and new_count < (prev_active_count * 0.2):
-        warning = f"Safeguard triggered for {company_name}: count dropped from {prev_active_count} to {new_count} (>80% drop). Expiry skipped."
-        return new_count, 0, warning
+            if upsert_rows:
+                # Upsert in chunks to avoid payload limits
+                chunk_size = 50
+                for i in range(0, len(upsert_rows), chunk_size):
+                    chunk = upsert_rows[i:i + chunk_size]
+                    client.table("jobs").upsert(
+                        chunk,
+                        on_conflict="source,company_id,external_id"
+                    ).execute()
 
-    # Mark roles not seen in this run as expired
-    expire_res = client.table("jobs") \
-        .update({"status": "expired"}) \
-        .eq("company_id", company_id) \
-        .eq("status", "active") \
-        .lt("last_seen", run_ts) \
-        .execute()
+            # Safeguard check: If count drops by > 80%, skip expiry
+            warning = None
+            new_count = len(upsert_rows)
+            if prev_active_count >= 5 and new_count < (prev_active_count * 0.2):
+                warning = f"Safeguard triggered for {company_name}: count dropped from {prev_active_count} to {new_count} (>80% drop). Expiry skipped."
+                return new_count, 0, warning
 
-    expired_count = len(expire_res.data or [])
-    return new_count, expired_count, None
+            # Mark roles not seen in this run as expired
+            expire_res = client.table("jobs") \
+                .update({"status": "expired"}) \
+                .eq("company_id", company_id) \
+                .eq("status", "active") \
+                .lt("last_seen", run_ts) \
+                .execute()
+
+            expired_count = len(expire_res.data or [])
+            return new_count, expired_count, None
+        except Exception as e:
+            reset_client()
+            if attempt == 1:
+                raise
 
 
 def log_pipeline_run(
@@ -148,12 +176,16 @@ def log_pipeline_run(
     companies_failed: int,
     jobs_active: int,
     jobs_expired: int,
-    errors: List[Dict[str, Any]]
+    errors: List[Dict[str, Any]],
+    company_stats: Optional[List[Dict[str, Any]]] = None,
 ):
-    """Record execution telemetry in pipeline_runs table."""
+    """Record execution telemetry in pipeline_runs table.
+    company_stats is written to the jsonb column if the column exists; silently
+    skipped if the migration has not been applied yet.
+    """
     try:
         client = get_client()
-        client.table("pipeline_runs").insert({
+        payload: Dict[str, Any] = {
             "started_at": started_at,
             "finished_at": finished_at,
             "companies_ok": companies_ok,
@@ -161,6 +193,17 @@ def log_pipeline_run(
             "jobs_active": jobs_active,
             "jobs_expired": jobs_expired,
             "errors": errors,
-        }).execute()
+        }
+        if company_stats is not None:
+            payload["company_stats"] = company_stats
+        try:
+            client.table("pipeline_runs").insert(payload).execute()
+        except Exception as inner:
+            # If company_stats column does not exist yet, retry without it
+            if "company_stats" in str(inner) and company_stats is not None:
+                payload.pop("company_stats", None)
+                client.table("pipeline_runs").insert(payload).execute()
+            else:
+                raise
     except Exception as e:
         print(f"Warning: Failed to log pipeline run: {e}")

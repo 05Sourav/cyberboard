@@ -1,0 +1,434 @@
+[
+  {
+    "name": "Sonatype",
+    "ats": "lever",
+    "slug": "sonatype",
+    "total_jobs": 13,
+    "security_jobs": 0,
+    "domain": "sonatype.com",
+    "notes": "retry"
+  },
+  {
+    "name": "Exabeam",
+    "ats": "greenhouse",
+    "slug": "exabeam",
+    "total_jobs": 0,
+    "security_jobs": 0,
+    "domain": "exabeam.com",
+    "notes": ""
+  },
+  {
+    "name": "Wiz",
+    "ats": "greenhouse",
+    "slug": "wizinc",
+    "total_jobs": 0,
+    "security_jobs": 0,
+    "domain": "wiz.io",
+    "notes": "already in roster; skip"
+  },
+  {
+    "name": "Stytch",
+    "ats": "ashby",
+    "slug": "stytch",
+    "total_jobs": 0,
+    "security_jobs": 0,
+    "domain": "stytch.com",
+    "notes": ""
+  },
+  {
+    "name": "HYPR",
+    "ats": "greenhouse",
+    "slug": "hypr",
+    "total_jobs": 4,
+    "security_jobs": 0,
+    "domain": "hypr.com",
+    "notes": ""
+  },
+  {
+    "name": "Beyond Identity",
+    "ats": "greenhouse",
+    "slug": "beyondidentity",
+    "total_jobs": 0,
+    "security_jobs": 0,
+    "domain": "beyondidentity.com",
+    "notes": ""
+  },
+  {
+    "name": "Veracode",
+    "ats": "greenhouse",
+    "slug": "veracode",
+    "total_jobs": 0,
+    "security_jobs": 0,
+    "domain": "veracode.com",
+    "notes": "already retrying"
+  },
+  {
+    "name": "StackHawk",
+    "ats": "lever",
+    "slug": "stackhawk",
+    "total_jobs": 1,
+    "security_jobs": 0,
+    "domain": "stackhawk.com",
+    "notes": ""
+  },
+  {
+    "name": "Drata",
+    "ats": "ashby",
+    "slug": "drata",
+    "total_jobs": 24,
+    "security_jobs": 0,
+    "domain": "drata.com",
+    "notes": ""
+  },
+  {
+    "name": "Hyperproof",
+    "ats": "greenhouse",
+    "slug": "hyperproof",
+    "total_jobs": 5,
+    "security_jobs": 0,
+    "domain": "hyperproof.io",
+    "notes": ""
+  },
+  {
+    "name": "Strike Graph",
+    "ats": "greenhouse",
+    "slug": "strike",
+    "total_jobs": 4,
+    "security_jobs": 0,
+    "domain": "strikegraph.com",
+    "notes": ""
+  },
+  {
+    "name": "Archer",
+    "ats": "greenhouse",
+    "slug": "archer",
+    "total_jobs": 1,
+    "security_jobs": 0,
+    "domain": "archerirm.com",
+    "notes": ""
+  },
+  {
+    "name": "Egress",
+    "ats": "greenhouse",
+    "slug": "egress",
+    "total_jobs": 0,
+    "security_jobs": 0,
+    "domain": "egress.com",
+    "notes": ""
+  },
+  {
+    "name": "Normalyze",
+    "ats": "lever",
+    "slug": "normalyze",
+    "total_jobs": 0,
+    "security_jobs": 0,
+    "domain": "normalyze.io",
+    "notes": "acq by Zscaler"
+  },
+  {
+    "name": "Keyfactor",
+    "ats": "greenhouse",
+    "slug": "keyfactorinc",
+    "total_jobs": 32,
+    "security_jobs": 0,
+    "domain": "keyfactor.com",
+    "notes": ""
+  },
+  {
+    "name": "Infisical",
+    "ats": "ashby",
+    "slug": "infisical",
+    "total_jobs": 11,
+    "security_jobs": 0,
+    "domain": "infisical.com",
+    "notes": ""
+  },
+  {
+    "name": "Doppler",
+    "ats": "ashby",
+    "slug": "doppler",
+    "total_jobs": 6,
+    "security_jobs": 0,
+    "domain": "doppler.com",
+    "notes": ""
+  },
+  {
+    "name": "Sumo Logic",
+    "ats": "greenhouse",
+    "slug": "sumologic",
+    "total_jobs": 26,
+    "security_jobs": 0,
+    "domain": "sumologic.com",
+    "notes": ""
+  },
+  {
+    "name": "Cyware",
+    "ats": "greenhouse",
+    "slug": "cyware",
+    "total_jobs": 4,
+    "security_jobs": 0,
+    "domain": "cyware.com",
+    "notes": ""
+  },
+  {
+    "name": "Picus Security",
+    "ats": "lever",
+    "slug": "picus",
+    "total_jobs": 15,
+    "security_jobs": 0,
+    "domain": "picussecurity.com",
+    "notes": ""
+  },
+  {
+    "name": "Socket Security",
+    "ats": "greenhouse",
+    "slug": "socket",
+    "total_jobs": 1,
+    "security_jobs": 0,
+    "domain": "socket.dev",
+    "notes": ""
+  },
+  {
+    "name": "Nirmata",
+    "ats": "greenhouse",
+    "slug": "nirmata",
+    "total_jobs": 2,
+    "security_jobs": 0,
+    "domain": "nirmata.com",
+    "notes": ""
+  },
+  {
+    "name": "Stacklok",
+    "ats": "greenhouse",
+    "slug": "stacklok",
+    "total_jobs": 2,
+    "security_jobs": 0,
+    "domain": "stacklok.com",
+    "notes": ""
+  },
+  {
+    "name": "Torq",
+    "ats": "greenhouse",
+    "slug": "torq",
+    "total_jobs": 30,
+    "security_jobs": 0,
+    "domain": "torq.io",
+    "notes": "SOAR"
+  },
+  {
+    "name": "Confluent",
+    "ats": "ashby",
+    "slug": "confluent",
+    "total_jobs": 0,
+    "security_jobs": 0,
+    "domain": "confluent.io",
+    "notes": ""
+  },
+  {
+    "name": "Cloudflare",
+    "ats": "greenhouse",
+    "slug": "cloudflare",
+    "total_jobs": 0,
+    "security_jobs": 0,
+    "domain": "cloudflare.com",
+    "notes": "already in roster"
+  },
+  {
+    "name": "Neon",
+    "ats": "ashby",
+    "slug": "neon",
+    "total_jobs": 1,
+    "security_jobs": 0,
+    "domain": "neon.tech",
+    "notes": ""
+  },
+  {
+    "name": "PlanetScale",
+    "ats": "greenhouse",
+    "slug": "planetscale",
+    "total_jobs": 12,
+    "security_jobs": 0,
+    "domain": "planetscale.com",
+    "notes": ""
+  },
+  {
+    "name": "Linear",
+    "ats": "ashby",
+    "slug": "linear",
+    "total_jobs": 32,
+    "security_jobs": 0,
+    "domain": "linear.app",
+    "notes": ""
+  },
+  {
+    "name": "Miro",
+    "ats": "ashby",
+    "slug": "miro",
+    "total_jobs": 13,
+    "security_jobs": 0,
+    "domain": "miro.com",
+    "notes": ""
+  },
+  {
+    "name": "Airtable",
+    "ats": "greenhouse",
+    "slug": "airtable",
+    "total_jobs": 11,
+    "security_jobs": 0,
+    "domain": "airtable.com",
+    "notes": ""
+  },
+  {
+    "name": "Kraken",
+    "ats": "lever",
+    "slug": "kraken",
+    "total_jobs": 0,
+    "security_jobs": 0,
+    "domain": "kraken.com",
+    "notes": ""
+  },
+  {
+    "name": "Circle",
+    "ats": "ashby",
+    "slug": "circle",
+    "total_jobs": 6,
+    "security_jobs": 0,
+    "domain": "circle.com",
+    "notes": ""
+  },
+  {
+    "name": "Wise",
+    "ats": "greenhouse",
+    "slug": "wise",
+    "total_jobs": 18,
+    "security_jobs": 0,
+    "domain": "wise.com",
+    "notes": ""
+  },
+  {
+    "name": "Nubank",
+    "ats": "greenhouse",
+    "slug": "nubank",
+    "total_jobs": 0,
+    "security_jobs": 0,
+    "domain": "nubank.com.br",
+    "notes": ""
+  },
+  {
+    "name": "KPMG",
+    "ats": "lever",
+    "slug": "kpmg",
+    "total_jobs": 0,
+    "security_jobs": 0,
+    "domain": "kpmg.com",
+    "notes": ""
+  },
+  {
+    "name": "Lumen",
+    "ats": "ashby",
+    "slug": "lumen",
+    "total_jobs": 0,
+    "security_jobs": 0,
+    "domain": "lumen.com",
+    "notes": ""
+  },
+  {
+    "name": "Oligo Security",
+    "ats": "ashby",
+    "slug": "oligo",
+    "total_jobs": 4,
+    "security_jobs": 0,
+    "domain": "oligo.security",
+    "notes": "runtime AppSec"
+  },
+  {
+    "name": "Corelight",
+    "ats": "greenhouse",
+    "slug": "corelight",
+    "total_jobs": 14,
+    "security_jobs": 0,
+    "domain": "corelight.com",
+    "notes": "NDR"
+  },
+  {
+    "name": "RunZero",
+    "ats": "greenhouse",
+    "slug": "runzero",
+    "total_jobs": 0,
+    "security_jobs": 0,
+    "domain": "runzero.com",
+    "notes": "asset discovery"
+  },
+  {
+    "name": "Nucleus Security",
+    "ats": "ashby",
+    "slug": "nucleus",
+    "total_jobs": 0,
+    "security_jobs": 0,
+    "domain": "nucleussecurity.com",
+    "notes": "vuln mgmt"
+  },
+  {
+    "name": "Secure Code Warrior",
+    "ats": "greenhouse",
+    "slug": "secure",
+    "total_jobs": 0,
+    "security_jobs": 0,
+    "domain": "securecodewarrior.com",
+    "notes": "dev security training"
+  },
+  {
+    "name": "Island",
+    "ats": "greenhouse",
+    "slug": "island",
+    "total_jobs": 19,
+    "security_jobs": 0,
+    "domain": "island.io",
+    "notes": "enterprise browser"
+  },
+  {
+    "name": "LogicMonitor",
+    "ats": "greenhouse",
+    "slug": "logicmonitor",
+    "total_jobs": 46,
+    "security_jobs": 0,
+    "domain": "logicmonitor.com",
+    "notes": ""
+  },
+  {
+    "name": "Benchling",
+    "ats": "ashby",
+    "slug": "benchling",
+    "total_jobs": 60,
+    "security_jobs": 0,
+    "domain": "benchling.com",
+    "notes": ""
+  },
+  {
+    "name": "Persona",
+    "ats": "ashby",
+    "slug": "persona",
+    "total_jobs": 12,
+    "security_jobs": 0,
+    "domain": "withpersona.com",
+    "notes": "identity verification"
+  },
+  {
+    "name": "Trulioo",
+    "ats": "ashby",
+    "slug": "trulioo",
+    "total_jobs": 28,
+    "security_jobs": 0,
+    "domain": "trulioo.com",
+    "notes": "identity verification"
+  },
+  {
+    "name": "Feedzai",
+    "ats": "greenhouse",
+    "slug": "feedzai",
+    "total_jobs": 9,
+    "security_jobs": 0,
+    "domain": "feedzai.com",
+    "notes": "fraud/risk"
+  }
+]

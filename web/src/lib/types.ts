@@ -1,7 +1,7 @@
 /** Shared TypeScript types for Cyberboard. */
 
 export type WorkMode = 'Remote' | 'Hybrid' | 'On-site'
-export type JobStatus = 'active' | 'expired' | 'removed'
+export type JobStatus = 'active' | 'expired' | 'removed' | 'excluded'
 export type PromotionTier = 'featured' | 'featured_plus'
 
 export type Category =
@@ -57,6 +57,7 @@ export interface Job {
   salary_currency: string | null
   salary_text: string | null
   status: JobStatus
+  exclusion_reason?: string | null
   first_seen: string
   last_seen: string
   // Joined

@@ -1,0 +1,164 @@
+CrowdStrike | tried greenhouse:crowdstrikeinc | try crowdstrikeinc; may be on Workday now
+SentinelOne | tried greenhouse:sentinelone | retry
+Teleport | tried greenhouse:teleport | try "teleport" slug too
+Chainalysis | tried greenhouse:chainalysis | retry
+Arctic Wolf | tried greenhouse:arcticwolf | try arcticwolf slug
+Rapid7 | tried greenhouse:rapid7 | retry
+Qualys | tried greenhouse:qualys | retry
+BitSight | tried greenhouse:bitsight | retry
+Lacework | tried greenhouse:lacework | retry (now part of Fortinet)
+Aqua Security | tried greenhouse:aqua | try "aqua" slug
+Checkmarx | tried greenhouse:checkmarx | retry; may be on Ashby
+Cybereason | tried greenhouse:cybereason | retry (layoffs; might be gone)
+SailPoint | tried greenhouse:sailpoint | retry (now private)
+Kroll | tried greenhouse:kroll | retry
+HashiCorp | tried lever:hashicorp | try lever (IBM acq)
+Splunk | tried lever:splunk | try lever (Cisco acq)
+GitHub | tried greenhouse:github | try "github" on GH careers
+Auth0 | tried greenhouse:auth0 | merged into Okta; skip or redirect
+NetSPI | tried greenhouse:netspi | retry
+ReliaQuest | tried greenhouse:reliaquest | retry
+Malwarebytes | tried greenhouse:malwarebytes | 
+Cylance | tried greenhouse:cylance | part of BlackBerry
+Cynet | tried ashby:cynet | 
+ThreatLocker | tried greenhouse:threatlocker | 
+Morphisec | tried greenhouse:morphisec | 
+Deep Instinct | tried greenhouse:deepinstinct | 
+Trellix | tried greenhouse:trellix | formerly McAfee Enterprise
+Secureworks | tried greenhouse:secureworks | 
+Carbon Black | tried greenhouse:carbonblack | part of VMware/Broadcom
+Cyberark | tried greenhouse:cyberark | 
+Varonis | tried greenhouse:varonis | 
+Tetragon (Isovalent) | tried greenhouse:isovalent | 
+LogRhythm | tried greenhouse:logrhythm | merged with Exabeam
+Datto | tried greenhouse:datto | 
+Prisma Cloud (Palo Alto) | tried greenhouse:paloaltonetworks | 
+Ermetic | tried greenhouse:ermetic | 
+Lasso Security | tried greenhouse:lasso | 
+Laminar Security | tried greenhouse:laminar | acq by Rubrik
+Cohesity | tried greenhouse:cohesity | 
+Bridgecrew | tried greenhouse:bridgecrew | acq by Palo Alto
+Lightspin | tried greenhouse:lightspin | acq by Cisco
+Upwind Security | tried ashby:upwind | 
+Cyera | tried greenhouse:cyera | 
+Dig Security | tried greenhouse:digsecurity | acq by Palo Alto
+RAD Security | tried ashby:radsecurity | 
+ForgeRock | tried greenhouse:forgerock | acq by Ping Identity
+Invicti | tried greenhouse:invicti | formerly Acunetix+Netsparker
+Synopsys | tried greenhouse:synopsys | 
+Doyensec | tried greenhouse:doyensec | 
+NowSecure | tried greenhouse:nowsecure | mobile AppSec
+Bright Security | tried greenhouse:brightsecurity | 
+ServiceNow | tried greenhouse:servicenow | GRC+ITSM
+Fusion Risk Management | tried greenhouse:fusionrisk | 
+MetricStream | tried greenhouse:metricstream | 
+Flashpoint | tried greenhouse:flashpoint | 
+Intel 471 | tried greenhouse:intel471 | 
+Mandiant | tried greenhouse:mandiant | acq by Google
+Team Cymru | tried greenhouse:teamcymru | 
+GreyNoise | tried greenhouse:greynoise | 
+Feedly | tried greenhouse:feedly | threat intel
+ZeroFox | tried greenhouse:zerofox | 
+Sixgill | tried greenhouse:sixgill | 
+Stairwell | tried greenhouse:stairwell | 
+Pondurance | tried greenhouse:pondurance | 
+Red Canary | tried greenhouse:redcanary | 
+Netsurion | tried greenhouse:netsurion | 
+eSentire | tried greenhouse:esentire | 
+Critical Start | tried greenhouse:criticalstart | 
+Optiv | tried greenhouse:optiv | 
+Trustwave | tried greenhouse:trustwave | 
+Nuspire | tried greenhouse:nuspire | 
+NCC Group | tried greenhouse:nccgroup | 
+Trustedsec | tried greenhouse:trustedsec | 
+Palo Alto Networks | tried greenhouse:paloaltonetworks | 
+Fortinet | tried greenhouse:fortinet | 
+Check Point | tried greenhouse:checkpoint | 
+Versa Networks | tried greenhouse:versanetworks | 
+Nile | tried greenhouse:nilesecure | 
+Airgap Networks | tried greenhouse:airgap | 
+Proofpoint | tried greenhouse:proofpoint | 
+Mimecast | tried greenhouse:mimecast | 
+Cofense | tried greenhouse:cofense | 
+Ironscales | tried greenhouse:ironscales | 
+SlashNext | tried greenhouse:slashnext | 
+Securiti | tried greenhouse:securiti | 
+Open Raven | tried greenhouse:openraven | 
+Venafi | tried greenhouse:venafi | acq by CyberArk
+SSH Communications | tried greenhouse:ssh | 
+HashiCorp Vault team | tried lever:hashicorp | try lever
+Securonix | tried greenhouse:securonix | 
+IBM QRadar (IBM Security) | tried greenhouse:ibm | 
+Devo | tried greenhouse:devo | 
+Siemplify | tried greenhouse:siemplify | acq by Google; check status
+Vectra AI | tried greenhouse:vectra | 
+Darktrace | tried greenhouse:darktrace | 
+Terraform Cloud | tried lever:hashicorp | same slug
+Pulumi | tried greenhouse:pulumi | 
+Cloudsmith | tried greenhouse:cloudsmith | 
+Anchore | tried greenhouse:anchore | 
+Styra | tried greenhouse:styra | OPA creator
+Rezilion | tried greenhouse:rezilion | 
+Slim.AI | tried greenhouse:slimai | 
+Cycode | tried greenhouse:cycode | 
+GitGuardian | tried greenhouse:gitguardian | 
+Legit Security | tried greenhouse:legitsecurity | 
+Ox Security | tried greenhouse:oxsecurity | 
+Phylum | tried greenhouse:phylum | 
+Swimlane | tried greenhouse:swimlane | SOAR
+Google | tried greenhouse:google | 
+Amazon | tried greenhouse:amazon | AWS security jobs
+Microsoft | tried greenhouse:microsoft | try GH; likely Workday
+Atlassian | tried greenhouse:atlassian | 
+Shopify | tried greenhouse:shopify | 
+Salesforce | tried greenhouse:salesforce | 
+HubSpot | tried greenhouse:hubspot | 
+Zendesk | tried greenhouse:zendesk | 
+Zoom | tried greenhouse:zoom | 
+Slack | tried greenhouse:slack | acq by Salesforce
+BlockFi | tried greenhouse:blockfi | bankrupt; skip
+Klarna | tried greenhouse:klarna | 
+Checkout.com | tried greenhouse:checkoutcom | 
+Marqeta | tried greenhouse:marqeta | 
+Nuvei | tried greenhouse:nuvei | 
+Revolut | tried greenhouse:revolut | 
+Epic Systems | tried greenhouse:epic | 
+Tempus | tried greenhouse:tempus | 
+Booz Allen Hamilton | tried greenhouse:boozallen | 
+Leidos | tried greenhouse:leidos | 
+MITRE | tried greenhouse:mitre | 
+Accenture Security | tried greenhouse:accenture | 
+Deloitte | tried greenhouse:deloitte | 
+EY | tried greenhouse:ey | 
+PwC | tried greenhouse:pwc | 
+Mandiant/Google | tried greenhouse:mandiant | acq by Google
+CrowdStrike Services | tried greenhouse:crowdstrikeinc | try inc suffix
+Northrop Grumman | tried greenhouse:northropgrumman | 
+Raytheon | tried greenhouse:raytheon | part of RTX
+BAE Systems | tried greenhouse:baesystems | 
+CACI | tried greenhouse:caci | 
+SAIC | tried greenhouse:saic | 
+Parsons | tried greenhouse:parsons | 
+Peraton | tried greenhouse:peraton | 
+Noblis | tried greenhouse:noblis | 
+Comcast Technology Solutions | tried greenhouse:comcast | 
+Verizon | tried greenhouse:verizon | 
+Unity | tried greenhouse:unity | 
+Upstream Security | tried greenhouse:upstream | automotive cyber
+Karamba Security | tried greenhouse:karamba | 
+Argus Cyber Security | tried greenhouse:argus | 
+Moveworks | tried greenhouse:moveworks | 
+Veza | tried ashby:veza | identity governance
+Noname Security | tried ashby:noname | API security; acq by Akamai
+PlexTrac | tried ashby:plextrac | pen test mgmt
+Noq Platform | tried ashby:noq | cloud IAM
+Cyolo | tried ashby:cyolo | zero trust access
+Privacera | tried ashby:privacera | data governance
+Tidal Cyber | tried ashby:tidalcyber | threat intel
+Opus Security | tried ashby:opussecurity | vuln management
+Lumu Technologies | tried ashby:lumu | threat detection
+Navan | tried lever:navan | 
+Gem | tried lever:gem | 
+Dbt Labs | tried lever:dbtlabs | 
+Unit21 | tried lever:unit21 | fraud/AML
+Immunefi | tried lever_eu:immunefi | web3 bug bounty

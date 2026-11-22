@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { FilterState, Job } from '@/lib/types'
-import { parseFilters, serializeFilters } from '@/lib/utils'
+import { parseFilters, serializeFilters, dedupeJobs } from '@/lib/utils'
 import { partitionPromotedJobs } from '@/lib/promotions'
 import { SearchBar } from '@/components/SearchBar'
 import { FilterSidebar } from '@/components/FilterSidebar'
@@ -39,7 +39,7 @@ function JobsBoard() {
         if (res.ok) {
           const data = await res.json()
           if (isMounted && data.jobs) {
-            setAllJobs(data.jobs)
+            setAllJobs(dedupeJobs(data.jobs))
           }
         }
       } catch (err) {

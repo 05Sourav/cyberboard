@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { createServerClient } from '@/lib/supabase'
 import { JobCard } from '@/components/JobCard'
-import { companyInitials } from '@/lib/utils'
+import { companyInitials, dedupeJobs } from '@/lib/utils'
 import { Job } from '@/lib/types'
 
 export const dynamic = 'force-dynamic'
@@ -57,10 +57,10 @@ export default async function CompanyPage({ params }: Props) {
     .eq('status', 'active')
     .order('first_seen', { ascending: false })
 
-  const jobs: Job[] = (rawJobs || []).map((j: any) => ({
+  const jobs: Job[] = dedupeJobs((rawJobs || []).map((j: any) => ({
     ...j,
     companies: company,
-  }))
+  })))
 
   const initials = companyInitials(company.name)
 
