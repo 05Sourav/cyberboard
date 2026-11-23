@@ -87,6 +87,10 @@ def run_pipeline(export_json_path: str = None, limit: int = None, target_company
     all_enriched_jobs = []
     company_stats = []  # per-company telemetry
 
+    _crashed = False
+    _crash_exc = None
+    _db_log_failed = False
+
     try:
         for idx, c in enumerate(companies):
             name = c.get("name", c["slug"])
@@ -195,9 +199,10 @@ def run_pipeline(export_json_path: str = None, limit: int = None, target_company
             companies_ok += 1
             time.sleep(PAUSE_BETWEEN_COMPANIES)
     except Exception as exc:
-        print(f"FATAL: Pipeline loop crashed: {exc}", file=sys.stderr)
-        errors.append({"error": f"Fatal pipeline crash: {exc}"})
-        raise
+        print(f"FATAL: Pipeline run crashed: {exc}", file=sys.stderr)
+        errors.append({"company": "pipeline", "error": f"Fatal crash: {exc}"})
+        _crashed = True
+        _crash_exc = exc
     finally:
         finished_at = dt.datetime.now(dt.timezone.utc).isoformat()
         print("\n================ Pipeline Finished ================")
@@ -223,7 +228,12 @@ def run_pipeline(export_json_path: str = None, limit: int = None, target_company
                     company_stats=company_stats,
                 )
             except Exception as log_err:
-                print(f"Warning: Failed to log pipeline run: {log_err}", file=sys.stderr)
+                print(f"ERROR: Failed to write pipeline_runs to Supabase (DB unreachable): {log_err}", file=sys.stderr)
+                _db_log_failed = True
+
+    # Exit non-zero after finally has written the pipeline_runs row or if DB unreachable / crashed
+    if _crashed or _db_log_failed:
+        sys.exit(1)
 
 
 if __name__ == "__main__":
