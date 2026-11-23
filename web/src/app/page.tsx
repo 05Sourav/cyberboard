@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { FilterState, Job } from '@/lib/types'
-import { parseFilters, serializeFilters, dedupeJobs } from '@/lib/utils'
+import { parseFilters, serializeFilters, dedupeJobs, interleaveCompanyJobs } from '@/lib/utils'
 import { partitionPromotedJobs } from '@/lib/promotions'
 import { SearchBar } from '@/components/SearchBar'
 import { FilterSidebar } from '@/components/FilterSidebar'
@@ -101,7 +101,7 @@ function JobsBoard() {
   // Filter and sort jobs (Supabase live data)
   const filteredJobs = useMemo(() => {
     const now = Date.now()
-    return allJobs.filter((job) => {
+    const filtered = allJobs.filter((job) => {
       // Search query
       if (filters.q) {
         const query = filters.q.toLowerCase()
@@ -158,7 +158,8 @@ function JobsBoard() {
       }
 
       return true
-    }).sort((a, b) => {
+    })
+    const sorted = filtered.sort((a, b) => {
       if (filters.sort === 'salary') {
         return (b.salary_min || 0) - (a.salary_min || 0)
       }
@@ -167,6 +168,7 @@ function JobsBoard() {
         new Date(a.posted_at || a.first_seen).getTime()
       )
     })
+    return filters.sort === 'newest' ? interleaveCompanyJobs(sorted) : sorted
   }, [filters, allJobs])
 
   // Apply promotion placement rules: max 3 pinned, random rotation, 1 per employer, overflow in regular list

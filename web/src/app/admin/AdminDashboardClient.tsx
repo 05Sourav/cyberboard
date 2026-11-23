@@ -123,12 +123,25 @@ export function AdminDashboardClient({
             </div>
             <div className="bg-white border border-[#D8E0E6] rounded-xl p-5">
               <div className="text-[12px] font-mono uppercase text-[#58697A] mb-1">Last Pipeline Sync</div>
-              <div className="text-[16px] font-mono font-semibold text-[#0B7A4B] truncate">
-                {lastRun?.finished_at ? new Date(lastRun.finished_at).toLocaleString() : 'Never'}
-              </div>
-              <div className="text-[12px] text-[#58697A] mt-1">
-                {lastRun ? `${lastRun.jobs_active} active roles` : 'No run logged'}
-              </div>
+              {lastRun?.finished_at ? (() => {
+                const hoursAgo = Math.floor((Date.now() - new Date(lastRun.finished_at).getTime()) / 3600000)
+                const isStale = hoursAgo > 8
+                return (
+                  <>
+                    <div className={`text-[16px] font-mono font-semibold truncate ${isStale ? 'text-[#C2410C]' : 'text-[#0B7A4B]'}`}>
+                      {isStale ? '⚠️ ' : ''}{hoursAgo}h ago
+                    </div>
+                    <div className="text-[12px] text-[#58697A] mt-1">
+                      {lastRun.jobs_active} active roles{isStale ? ' · Sync overdue' : ''}
+                    </div>
+                  </>
+                )
+              })() : (
+                <>
+                  <div className="text-[16px] font-mono font-semibold text-[#C2410C]">Never</div>
+                  <div className="text-[12px] text-[#58697A] mt-1">No run logged</div>
+                </>
+              )}
             </div>
           </div>
 

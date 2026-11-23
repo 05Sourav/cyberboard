@@ -77,13 +77,37 @@ def sync_company_jobs(
     run_ts: str,
 ) -> Tuple[int, int, Optional[str]]:
     """Upsert security jobs, apply 80% safeguard, and expire vanished roles.
+    Safeguards:
+    - Empty feed or >80% drop skips immediate expiry, but expires active jobs not seen for >18h.
     Returns (num_upserted, num_expired, warning_or_error_msg).
     """
     company_id = company_row["id"]
     company_name = company_row["name"]
 
+    run_dt = dt.datetime.fromisoformat(run_ts.replace("Z", "+00:00"))
+    cutoff_18h = (run_dt - dt.timedelta(hours=18)).isoformat()
+
     if not jobs:
-        # Empty feed safeguard: do not expire anything
+        # Empty feed safeguard: skip immediate expiry, but expire jobs stale >18h
+        for attempt in range(2):
+            try:
+                client = get_client()
+                stale_res = client.table("jobs") \
+                    .update({"status": "expired"}) \
+                    .eq("company_id", company_id) \
+                    .eq("status", "active") \
+                    .lt("last_seen", cutoff_18h) \
+                    .execute()
+                stale_expired = len(stale_res.data or [])
+                if stale_expired > 0:
+                    warn = f"Empty feed for {company_name}: expired {stale_expired} stale roles older than 18h grace period."
+                else:
+                    warn = f"Empty feed for {company_name}; expiry skipped (within 18h grace window)."
+                return 0, stale_expired, warn
+            except Exception:
+                reset_client()
+                if attempt == 1:
+                    raise
         return 0, 0, f"Empty feed for {company_name}; expiry skipped"
 
     for attempt in range(2):
@@ -146,14 +170,23 @@ def sync_company_jobs(
                         on_conflict="source,company_id,external_id"
                     ).execute()
 
-            # Safeguard check: If count drops by > 80%, skip expiry
-            warning = None
+            # Safeguard check: If count drops by > 80%, skip immediate expiry, but expire jobs stale >18h
             new_count = len(upsert_rows)
             if prev_active_count >= 5 and new_count < (prev_active_count * 0.2):
-                warning = f"Safeguard triggered for {company_name}: count dropped from {prev_active_count} to {new_count} (>80% drop). Expiry skipped."
-                return new_count, 0, warning
+                stale_res = client.table("jobs") \
+                    .update({"status": "expired"}) \
+                    .eq("company_id", company_id) \
+                    .eq("status", "active") \
+                    .lt("last_seen", cutoff_18h) \
+                    .execute()
+                stale_expired = len(stale_res.data or [])
+                if stale_expired > 0:
+                    warning = f"Safeguard triggered for {company_name}: count dropped from {prev_active_count} to {new_count} (>80% drop). Expired {stale_expired} stale roles older than 18h grace period."
+                else:
+                    warning = f"Safeguard triggered for {company_name}: count dropped from {prev_active_count} to {new_count} (>80% drop). Expiry skipped (within 18h grace window)."
+                return new_count, stale_expired, warning
 
-            # Mark roles not seen in this run as expired
+            # Normal healthy expiry: mark roles not seen in this run as expired
             expire_res = client.table("jobs") \
                 .update({"status": "expired"}) \
                 .eq("company_id", company_id) \
@@ -164,6 +197,40 @@ def sync_company_jobs(
             expired_count = len(expire_res.data or [])
             return new_count, expired_count, None
         except Exception as e:
+            reset_client()
+            if attempt == 1:
+                raise
+
+
+def expire_stale_jobs_on_failure(
+    company_row: Dict[str, Any],
+    run_ts: str,
+    reason: str,
+    threshold_hours: int = 72,
+) -> Tuple[int, Optional[str]]:
+    """Expire active jobs for a company whose fetch failed or returned 404,
+    if they have not been seen for longer than threshold_hours (default: 72h).
+    """
+    company_id = company_row["id"]
+    company_name = company_row["name"]
+    run_dt = dt.datetime.fromisoformat(run_ts.replace("Z", "+00:00"))
+    cutoff_ts = (run_dt - dt.timedelta(hours=threshold_hours)).isoformat()
+
+    for attempt in range(2):
+        try:
+            client = get_client()
+            stale_res = client.table("jobs") \
+                .update({"status": "expired"}) \
+                .eq("company_id", company_id) \
+                .eq("status", "active") \
+                .lt("last_seen", cutoff_ts) \
+                .execute()
+            stale_expired = len(stale_res.data or [])
+            if stale_expired > 0:
+                warning = f"Fetch failed for {company_name} ({reason}): expired {stale_expired} stale roles older than {threshold_hours}h grace period."
+                return stale_expired, warning
+            return 0, None
+        except Exception:
             reset_client()
             if attempt == 1:
                 raise

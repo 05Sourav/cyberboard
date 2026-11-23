@@ -2,6 +2,7 @@ import React from 'react'
 import Link from 'next/link'
 import { Job } from '@/lib/types'
 import { companyInitials, formatSalary, timeAgo, isNew } from '@/lib/utils'
+import { LAUNCH_DATE } from '@/config/site'
 
 interface JobCardProps {
   job: Job
@@ -17,7 +18,7 @@ export function JobCard({ job, isFeatured }: JobCardProps) {
     job.salary_currency,
     job.salary_text
   )
-  const isJobNew = isNew(job.first_seen, '2026-11-01T00:00:00Z')
+  const isJobNew = isNew(job.first_seen, LAUNCH_DATE, job.companies?.created_at)
   const initials = companyInitials(job.companies?.name || 'CB')
 
   // Container styling based on promotion tier
@@ -118,7 +119,7 @@ export function JobCard({ job, isFeatured }: JobCardProps) {
       {/* Right side: Timestamp & Apply action */}
       <div className="flex items-center justify-between md:justify-end gap-4 shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-[#D8E0E6]">
         <span className="font-mono text-[12px] text-[#58697A] whitespace-nowrap">
-          {timeAgo(job.posted_at || job.first_seen)}
+          {job.posted_at ? timeAgo(job.posted_at) : null}
         </span>
         <Link
           href={`/go/${job.id}`}

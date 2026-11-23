@@ -1,4 +1,5 @@
-import { FilterState } from './types'
+import { FilterState, Job } from './types'
+import { LAUNCH_DATE } from '@/config/site'
 
 /** Parse URL search params into a FilterState object. */
 export function parseFilters(params: URLSearchParams): FilterState {
@@ -73,12 +74,63 @@ export function companyInitials(name: string): string {
   return name.slice(0, 2).toUpperCase()
 }
 
-/** Check if a job is "NEW" — seen within 3 days after launch. */
-export function isNew(firstSeen: string, launchDate: string): boolean {
+/**
+ * Check if a job qualifies for the "NEW" badge:
+ * - first_seen must be after LAUNCH_DATE (seeded/initial jobs never show NEW)
+ * - must be within 3 days (72 hours) of current time
+ * - never for jobs from a company's first-ever fetch (identified when job.first_seen
+ *   is within 2 hours of company.created_at)
+ */
+export function isNew(
+  firstSeen: string,
+  launchDate: string = LAUNCH_DATE,
+  companyCreatedAt?: string | null
+): boolean {
+  if (!firstSeen) return false
   const seen = new Date(firstSeen).getTime()
   const launch = new Date(launchDate).getTime()
   if (seen <= launch) return false // Seeded jobs are never NEW
+
+  // Exclude jobs from a company's first-ever fetch
+  if (companyCreatedAt) {
+    const compCreated = new Date(companyCreatedAt).getTime()
+    if (Math.abs(seen - compCreated) < 2 * 60 * 60 * 1000) {
+      return false
+    }
+  }
+
   return Date.now() - seen < 3 * 24 * 60 * 60 * 1000
+}
+
+/**
+ * Interleave jobs so at most `maxConsecutive` cards from the same company appear consecutively.
+ * Preserves the original sort order as closely as possible.
+ */
+export function interleaveCompanyJobs(jobs: Job[], maxConsecutive = 2): Job[] {
+  if (jobs.length <= maxConsecutive) return jobs
+
+  const result: Job[] = []
+  const remaining = [...jobs]
+
+  while (remaining.length > 0) {
+    const last1 = result.length > 0 ? (result[result.length - 1].companies?.id || result[result.length - 1].company_id) : null
+    const last2 = result.length > 1 ? (result[result.length - 2].companies?.id || result[result.length - 2].company_id) : null
+
+    const disallowCompany = (last1 && last2 && last1 === last2) ? last1 : null
+
+    let pickIndex = -1
+    if (disallowCompany) {
+      pickIndex = remaining.findIndex((j) => (j.companies?.id || j.company_id) !== disallowCompany)
+    }
+
+    if (pickIndex === -1) {
+      pickIndex = 0
+    }
+
+    result.push(remaining.splice(pickIndex, 1)[0])
+  }
+
+  return result
 }
 
 /** Detect country from browser timezone (Intl). */

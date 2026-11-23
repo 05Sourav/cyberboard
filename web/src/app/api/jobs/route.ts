@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
         let q2 = supabase
           .from('jobs')
           .select(
-            '*, companies(id, slug, name, domain, logo_url, hq_country), promotions(id, tier, highlight, starts_at, ends_at)'
+            '*, companies(id, slug, name, domain, logo_url, hq_country, created_at), promotions(id, tier, highlight, starts_at, ends_at)'
           )
           .eq('status', 'active')
           .eq('companies.blocked', false)

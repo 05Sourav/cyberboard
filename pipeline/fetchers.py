@@ -7,10 +7,12 @@ import datetime as dt
 from typing import List, Dict, Optional, Any
 import requests
 
-DEFAULT_UA = os.environ.get(
-    "FETCHER_USER_AGENT",
-    "cyberboard-fetcher/1.0 (contact: contact@cyberboard.co)"
-)
+DEFAULT_UA = os.environ.get("FETCHER_USER_AGENT")
+if not DEFAULT_UA:
+    import sys
+    print("Warning: FETCHER_USER_AGENT environment variable is not set. Using local development placeholder.", file=sys.stderr)
+    DEFAULT_UA = "cyberboard-fetcher/1.0 (local-dev; placeholder-agent)"
+
 HEADERS = {"User-Agent": DEFAULT_UA}
 TIMEOUT = 30
 MAX_RETRIES = 3

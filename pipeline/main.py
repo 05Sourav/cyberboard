@@ -3,6 +3,7 @@ Fetches public career feeds from verified roster, filters cybersecurity roles,
 enriches them with classification metadata, and upserts them to Supabase Postgres.
 """
 import sys
+import os
 import json
 import time
 import argparse
@@ -43,14 +44,40 @@ def run_pipeline(export_json_path: str = None, limit: int = None, target_company
     else:
         print(f"Loaded {len(companies)} companies from roster.")
 
-    # Determine database mode
+    # Determine database mode & validate environment
+    is_ci = bool(os.environ.get("GITHUB_ACTIONS") or os.environ.get("CI"))
+    missing_vars = []
+    if not (os.environ.get("NEXT_PUBLIC_SUPABASE_URL") or os.environ.get("SUPABASE_URL")):
+        missing_vars.append("NEXT_PUBLIC_SUPABASE_URL")
+    if not (os.environ.get("SUPABASE_SERVICE_ROLE_KEY") or os.environ.get("SUPABASE_SECRET_KEY")):
+        missing_vars.append("SUPABASE_SERVICE_ROLE_KEY")
+    if not os.environ.get("FETCHER_USER_AGENT"):
+        missing_vars.append("FETCHER_USER_AGENT")
+
+    if is_ci and missing_vars:
+        print(
+            f"FATAL (CI mode): Missing required environment variables: {', '.join(missing_vars)}",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
     use_supabase = False
     try:
-        from db import ensure_company, sync_company_jobs, log_pipeline_run, get_client
+        from db import (
+            ensure_company,
+            sync_company_jobs,
+            expire_stale_jobs_on_failure,
+            log_pipeline_run,
+            get_client,
+        )
         get_client().table("companies").select("id").limit(1).execute()
         use_supabase = True
     except Exception as e:
-        print(f"Note: Supabase unreachable or project paused ({e}). Running in offline/export mode.")
+        if is_ci:
+            print(f"FATAL (CI mode): Preflight Supabase check failed: {e}", file=sys.stderr)
+            sys.exit(1)
+        print(f"WARNING (Local mode): Supabase unreachable or project paused ({e}).")
+        print("WARNING: Running in offline/export mode. NOTHING will be written to the database!")
 
     companies_ok = 0
     companies_failed = 0
@@ -60,111 +87,143 @@ def run_pipeline(export_json_path: str = None, limit: int = None, target_company
     all_enriched_jobs = []
     company_stats = []  # per-company telemetry
 
-    for idx, c in enumerate(companies):
-        name = c.get("name", c["slug"])
-        slug = c["slug"]
-        ats = c.get("ats", "greenhouse")
-        host_key = c.get("lever_host")
+    try:
+        for idx, c in enumerate(companies):
+            name = c.get("name", c["slug"])
+            slug = c["slug"]
+            ats = c.get("ats", "greenhouse")
+            host_key = c.get("lever_host")
 
-        fetcher = FETCHERS.get(ats)
-        if not fetcher:
-            print(f"[{idx+1}/{len(companies)}] Unknown ATS '{ats}' for {name}")
-            companies_failed += 1
-            errors.append({"company": name, "error": f"Unknown ATS: {ats}"})
-            continue
+            fetcher = FETCHERS.get(ats)
+            if not fetcher:
+                print(f"[{idx+1}/{len(companies)}] Unknown ATS '{ats}' for {name}")
+                companies_failed += 1
+                errors.append({"company": name, "error": f"Unknown ATS: {ats}"})
+                continue
 
-        try:
-            if ats == "lever":
-                raw_jobs = fetcher(slug, host_key)
+            try:
+                if ats == "lever":
+                    raw_jobs = fetcher(slug, host_key)
+                else:
+                    raw_jobs = fetcher(slug)
+            except Exception as err:
+                print(f"[{idx+1}/{len(companies)}] ❌ Fetch error for {name}: {err}")
+                companies_failed += 1
+                errors.append({"company": name, "error": str(err)})
+                if use_supabase:
+                    try:
+                        comp_row = ensure_company(c)
+                        if comp_row:
+                            n_exp, warn = expire_stale_jobs_on_failure(
+                                comp_row, started_at, str(err), threshold_hours=72
+                            )
+                            total_expired_jobs += n_exp
+                            if warn:
+                                errors.append({"company": name, "warning": warn})
+                    except Exception as db_err:
+                        errors.append({"company": name, "error": f"DB cleanup error on failure: {db_err}"})
+                time.sleep(PAUSE_BETWEEN_COMPANIES)
+                continue
+
+            if raw_jobs is None:
+                print(f"[{idx+1}/{len(companies)}] ⚠️  404/Empty board for {name} ({slug}) on {ats}")
+                companies_failed += 1
+                errors.append({"company": name, "error": "Board returned 404"})
+                company_stats.append({"company": name, "ats": ats, "slug": slug,
+                                       "status": "404", "raw_jobs": 0, "security_jobs": 0,
+                                       "error": "Board returned 404"})
+                if use_supabase:
+                    try:
+                        comp_row = ensure_company(c)
+                        if comp_row:
+                            n_exp, warn = expire_stale_jobs_on_failure(
+                                comp_row, started_at, "Board returned 404", threshold_hours=72
+                            )
+                            total_expired_jobs += n_exp
+                            if warn:
+                                errors.append({"company": name, "warning": warn})
+                    except Exception as db_err:
+                        errors.append({"company": name, "error": f"DB cleanup error on 404: {db_err}"})
+                time.sleep(PAUSE_BETWEEN_COMPANIES)
+                continue
+
+            # Filter & enrich cybersecurity roles
+            sec_jobs = []
+            for j in raw_jobs:
+                matched, keyword = is_security(j.get("title", ""), j.get("department", ""))
+                if matched:
+                    j["company"] = name
+                    j["company_slug"] = slug
+                    j["matched_keyword"] = keyword
+                    enriched = enrich(j)
+                    sec_jobs.append(enriched)
+                    all_enriched_jobs.append(enriched)
+
+            if use_supabase:
+                try:
+                    comp_row = ensure_company(c)
+                    if comp_row is None:
+                        print(f"[{idx+1}/{len(companies)}] Company {name} is blocked; skipped.")
+                        company_stats.append({"company": name, "ats": ats, "slug": slug,
+                                               "status": "blocked", "raw_jobs": len(raw_jobs),
+                                               "security_jobs": len(sec_jobs), "error": "blocked"})
+                        continue
+                    n_upsert, n_exp, warn = sync_company_jobs(comp_row, ats, sec_jobs, started_at)
+                    if warn:
+                        errors.append({"company": name, "warning": warn})
+                    total_active_jobs += n_upsert
+                    total_expired_jobs += n_exp
+                    company_stats.append({"company": name, "ats": ats, "slug": slug,
+                                           "status": "ok", "raw_jobs": len(raw_jobs),
+                                           "security_jobs": len(sec_jobs),
+                                           "active_upserted": n_upsert, "expired": n_exp,
+                                           "warning": warn or None})
+                    print(f"[{idx+1}/{len(companies)}] ✅ {name} [{ats}]: {len(raw_jobs)} total -> {len(sec_jobs)} security ({n_exp} expired)")
+                except Exception as db_err:
+                    print(f"[{idx+1}/{len(companies)}] Database error for {name}: {db_err}")
+                    errors.append({"company": name, "error": str(db_err)})
+                    company_stats.append({"company": name, "ats": ats, "slug": slug,
+                                           "status": "db_error", "raw_jobs": len(raw_jobs),
+                                           "security_jobs": len(sec_jobs), "error": str(db_err)})
             else:
-                raw_jobs = fetcher(slug)
-        except Exception as err:
-            print(f"[{idx+1}/{len(companies)}] ❌ Fetch error for {name}: {err}")
-            companies_failed += 1
-            errors.append({"company": name, "error": str(err)})
-            time.sleep(PAUSE_BETWEEN_COMPANIES)
-            continue
+                total_active_jobs += len(sec_jobs)
+                company_stats.append({"company": name, "ats": ats, "slug": slug,
+                                       "status": "ok_offline", "raw_jobs": len(raw_jobs),
+                                       "security_jobs": len(sec_jobs)})
+                print(f"[{idx+1}/{len(companies)}] ✅ {name} [{ats}]: {len(raw_jobs)} total -> {len(sec_jobs)} security")
 
-        if raw_jobs is None:
-            print(f"[{idx+1}/{len(companies)}] ⚠️  404/Empty board for {name} ({slug}) on {ats}")
-            companies_failed += 1
-            errors.append({"company": name, "error": "Board returned 404"})
-            company_stats.append({"company": name, "ats": ats, "slug": slug,
-                                   "status": "404", "raw_jobs": 0, "security_jobs": 0,
-                                   "error": "Board returned 404"})
+            companies_ok += 1
             time.sleep(PAUSE_BETWEEN_COMPANIES)
-            continue
+    except Exception as exc:
+        print(f"FATAL: Pipeline loop crashed: {exc}", file=sys.stderr)
+        errors.append({"error": f"Fatal pipeline crash: {exc}"})
+        raise
+    finally:
+        finished_at = dt.datetime.now(dt.timezone.utc).isoformat()
+        print("\n================ Pipeline Finished ================")
+        print(f"Companies OK: {companies_ok} | Failed: {companies_failed}")
+        print(f"Total Security Jobs Active: {total_active_jobs} | Expired: {total_expired_jobs}")
 
-        # Filter & enrich cybersecurity roles
-        sec_jobs = []
-        for j in raw_jobs:
-            matched, keyword = is_security(j.get("title", ""), j.get("department", ""))
-            if matched:
-                j["company"] = name
-                j["company_slug"] = slug
-                j["matched_keyword"] = keyword
-                enriched = enrich(j)
-                sec_jobs.append(enriched)
-                all_enriched_jobs.append(enriched)
+        if export_json_path:
+            out_file = Path(export_json_path)
+            out_file.parent.mkdir(parents=True, exist_ok=True)
+            out_file.write_text(json.dumps(all_enriched_jobs, indent=2, default=str), encoding="utf-8")
+            print(f"Exported {len(all_enriched_jobs)} jobs to {export_json_path}")
 
         if use_supabase:
             try:
-                comp_row = ensure_company(c)
-                if comp_row is None:
-                    print(f"[{idx+1}/{len(companies)}] Company {name} is blocked; skipped.")
-                    company_stats.append({"company": name, "ats": ats, "slug": slug,
-                                           "status": "blocked", "raw_jobs": len(raw_jobs),
-                                           "security_jobs": len(sec_jobs), "error": "blocked"})
-                    continue
-                n_upsert, n_exp, warn = sync_company_jobs(comp_row, ats, sec_jobs, started_at)
-                if warn:
-                    errors.append({"company": name, "warning": warn})
-                total_active_jobs += n_upsert
-                total_expired_jobs += n_exp
-                company_stats.append({"company": name, "ats": ats, "slug": slug,
-                                       "status": "ok", "raw_jobs": len(raw_jobs),
-                                       "security_jobs": len(sec_jobs),
-                                       "active_upserted": n_upsert, "expired": n_exp,
-                                       "warning": warn or None})
-                print(f"[{idx+1}/{len(companies)}] ✅ {name} [{ats}]: {len(raw_jobs)} total -> {len(sec_jobs)} security ({n_exp} expired)")
-            except Exception as db_err:
-                print(f"[{idx+1}/{len(companies)}] Database error for {name}: {db_err}")
-                errors.append({"company": name, "error": str(db_err)})
-                company_stats.append({"company": name, "ats": ats, "slug": slug,
-                                       "status": "db_error", "raw_jobs": len(raw_jobs),
-                                       "security_jobs": len(sec_jobs), "error": str(db_err)})
-        else:
-            total_active_jobs += len(sec_jobs)
-            company_stats.append({"company": name, "ats": ats, "slug": slug,
-                                   "status": "ok_offline", "raw_jobs": len(raw_jobs),
-                                   "security_jobs": len(sec_jobs)})
-            print(f"[{idx+1}/{len(companies)}] ✅ {name} [{ats}]: {len(raw_jobs)} total -> {len(sec_jobs)} security")
-
-        companies_ok += 1
-        time.sleep(PAUSE_BETWEEN_COMPANIES)
-
-    finished_at = dt.datetime.now(dt.timezone.utc).isoformat()
-    print("\n================ Pipeline Finished ================")
-    print(f"Companies OK: {companies_ok} | Failed: {companies_failed}")
-    print(f"Total Security Jobs Active: {total_active_jobs} | Expired: {total_expired_jobs}")
-
-    if export_json_path:
-        out_file = Path(export_json_path)
-        out_file.parent.mkdir(parents=True, exist_ok=True)
-        out_file.write_text(json.dumps(all_enriched_jobs, indent=2, default=str), encoding="utf-8")
-        print(f"Exported {len(all_enriched_jobs)} jobs to {export_json_path}")
-
-    if use_supabase:
-        log_pipeline_run(
-            started_at=started_at,
-            finished_at=finished_at,
-            companies_ok=companies_ok,
-            companies_failed=companies_failed,
-            jobs_active=total_active_jobs,
-            jobs_expired=total_expired_jobs,
-            errors=errors,
-            company_stats=company_stats,
-        )
+                log_pipeline_run(
+                    started_at=started_at,
+                    finished_at=finished_at,
+                    companies_ok=companies_ok,
+                    companies_failed=companies_failed,
+                    jobs_active=total_active_jobs,
+                    jobs_expired=total_expired_jobs,
+                    errors=errors,
+                    company_stats=company_stats,
+                )
+            except Exception as log_err:
+                print(f"Warning: Failed to log pipeline run: {log_err}", file=sys.stderr)
 
 
 if __name__ == "__main__":
