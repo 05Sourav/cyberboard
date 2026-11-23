@@ -163,18 +163,10 @@ function JobsBoard() {
       if (filters.sort === 'salary') {
         return (b.salary_min || 0) - (a.salary_min || 0)
       }
-      // "Most recent": jobs with a real posted_at sort above jobs that only have first_seen.
-      // Within each group, sort by their respective timestamp descending.
-      const aHasDate = Boolean(a.posted_at)
-      const bHasDate = Boolean(b.posted_at)
-      if (aHasDate !== bHasDate) return aHasDate ? -1 : 1
-      const aTime = aHasDate
-        ? new Date(a.posted_at!).getTime()
-        : new Date(a.first_seen).getTime()
-      const bTime = bHasDate
-        ? new Date(b.posted_at!).getTime()
-        : new Date(b.first_seen).getTime()
-      return bTime - aTime
+      // "Most recent": ONE combined key per job (posted_at if known, otherwise first_seen) descending across all jobs
+      const aKey = new Date(a.posted_at || a.first_seen).getTime()
+      const bKey = new Date(b.posted_at || b.first_seen).getTime()
+      return bKey - aKey
     })
     return filters.sort === 'newest' ? interleaveCompanyJobs(sorted) : sorted
   }, [filters, allJobs])
