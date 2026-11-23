@@ -5,28 +5,30 @@ import React, { useState, useRef, useEffect } from 'react'
 interface SearchBarProps {
   query: string
   selectedCountry: string
+  totalJobs?: number
   countryCounts?: Record<string, number>
   onQueryChange: (q: string) => void
   onCountryChange: (country: string) => void
 }
 
-const TOP_COUNTRIES = [
-  { name: 'Anywhere', count: 1284 },
-  { name: 'India', count: 214 },
-  { name: 'United States', count: 640 },
-  { name: 'United Kingdom', count: 180 },
-  { name: 'Canada', count: 95 },
-  { name: 'Germany', count: 88 },
-  { name: 'Israel', count: 72 },
-  { name: 'Singapore', count: 45 },
-  { name: 'Australia', count: 52 },
-  { name: 'Netherlands', count: 38 },
-  { name: 'France', count: 34 },
+const TOP_COUNTRY_NAMES = [
+  'Anywhere',
+  'India',
+  'United States',
+  'United Kingdom',
+  'Canada',
+  'Germany',
+  'Israel',
+  'Singapore',
+  'Australia',
+  'Netherlands',
+  'France',
 ]
 
 export function SearchBar({
   query,
   selectedCountry,
+  totalJobs = 0,
   countryCounts = {},
   onQueryChange,
   onCountryChange,
@@ -44,10 +46,13 @@ export function SearchBar({
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  const currentCount =
-    countryCounts[selectedCountry] ??
-    TOP_COUNTRIES.find((c) => c.name === selectedCountry)?.count ??
-    214
+  // "Anywhere" shows totalJobs; individual countries use live countryCounts
+  const getCount = (name: string) => {
+    if (name === 'Anywhere') return totalJobs
+    return countryCounts[name] ?? 0
+  }
+
+  const currentCount = getCount(selectedCountry)
 
   return (
     <div className="relative flex items-center h-12 w-full md:w-[620px] bg-white border border-[#D8E0E6] rounded-[6px] shadow-sm">
@@ -134,22 +139,22 @@ export function SearchBar({
             <div className="px-3 py-1.5 text-[11px] font-mono uppercase font-bold text-[#58697A] border-b border-[#D8E0E6]/50">
               Select Region
             </div>
-            {TOP_COUNTRIES.map((c) => {
-              const count = countryCounts[c.name] ?? c.count
-              const isSelected = selectedCountry === c.name
+            {TOP_COUNTRY_NAMES.map((name) => {
+              const count = getCount(name)
+              const isSelected = selectedCountry === name
               return (
                 <button
-                  key={c.name}
+                  key={name}
                   type="button"
                   onClick={() => {
-                    onCountryChange(c.name)
+                    onCountryChange(name)
                     setDropdownOpen(false)
                   }}
                   className={`w-full flex items-center justify-between px-3.5 py-2 text-[13px] text-left transition-colors ${
                     isSelected ? 'bg-[#EBF5FF] text-[#1B4F8F] font-semibold' : 'text-[#0F1F2A] hover:bg-[#F3F6F8]'
                   }`}
                 >
-                  <span>{c.name}</span>
+                  <span>{name}</span>
                   <span className="font-mono text-[11px] text-[#58697A]">({count})</span>
                 </button>
               )

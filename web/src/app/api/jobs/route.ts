@@ -14,72 +14,88 @@ export async function GET(request: NextRequest) {
   const posted = searchParams.get('posted') || ''
   const salaryOnly = searchParams.get('salary') === '1'
   const sort = searchParams.get('sort') || 'newest'
-  const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10))
-  const limitParam = parseInt(searchParams.get('limit') || searchParams.get('pageSize') || '100', 10)
-  const pageSize = Math.min(Math.max(1, limitParam), 250)
 
   if (isSupabaseConfigured()) {
     try {
       const supabase = createServerClient()
-      let query = supabase
-        .from('jobs')
-        .select(
-          '*, companies(id, slug, name, domain, logo_url, hq_country), promotions(id, tier, highlight, starts_at, ends_at)',
-          { count: 'exact' }
-        )
-        .eq('status', 'active')
-        .eq('companies.blocked', false)
 
-      if (q) {
-        query = query.or(`title.ilike.%${q}%,location.ilike.%${q}%,department.ilike.%${q}%`)
-      }
-
-      if (country && country !== 'Anywhere') {
-        if (includeRemote) {
-          query = query.or(
-            `countries.cs.{${country}},and(work_mode.eq.Remote,or(worldwide.eq.true,probably_worldwide.eq.true))`
+      // Build the base filtered query (no range yet)
+      const buildQuery = () => {
+        let q2 = supabase
+          .from('jobs')
+          .select(
+            '*, companies(id, slug, name, domain, logo_url, hq_country), promotions(id, tier, highlight, starts_at, ends_at)'
           )
-        } else {
-          query = query.contains('countries', [country])
+          .eq('status', 'active')
+          .eq('companies.blocked', false)
+
+        if (q) {
+          q2 = q2.or(`title.ilike.%${q}%,location.ilike.%${q}%,department.ilike.%${q}%`)
         }
+
+        if (country && country !== 'Anywhere') {
+          if (includeRemote) {
+            q2 = q2.or(
+              `countries.cs.{${country}},and(work_mode.eq.Remote,or(worldwide.eq.true,probably_worldwide.eq.true))`
+            )
+          } else {
+            q2 = q2.contains('countries', [country])
+          }
+        }
+
+        if (categories.length > 0) q2 = q2.in('category', categories)
+        if (levels.length > 0) q2 = q2.in('level', levels)
+        if (workModes.length > 0) q2 = q2.in('work_mode', workModes)
+
+        if (posted) {
+          const days = posted === '1d' ? 1 : posted === '3d' ? 3 : posted === '7d' ? 7 : 30
+          const cutoff = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString()
+          q2 = q2.gte('first_seen', cutoff)
+        }
+
+        if (salaryOnly) {
+          q2 = q2.or('salary_min.not.is.null,salary_text.not.is.null')
+        }
+
+        if (sort === 'salary') {
+          q2 = q2.order('salary_min', { ascending: false, nullsFirst: false })
+        } else {
+          q2 = q2.order('first_seen', { ascending: false })
+        }
+
+        return q2
       }
 
-      if (categories.length > 0) query = query.in('category', categories)
-      if (levels.length > 0) query = query.in('level', levels)
-      if (workModes.length > 0) query = query.in('work_mode', workModes)
-
-      if (posted) {
-        const days = posted === '1d' ? 1 : posted === '3d' ? 3 : posted === '7d' ? 7 : 30
-        const cutoff = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString()
-        query = query.gte('first_seen', cutoff)
+      // Paginate through Supabase 1 000-row limit until all rows are fetched
+      const CHUNK = 1000
+      let allData: any[] = []
+      let from = 0
+      while (true) {
+        const { data, error } = await buildQuery().range(from, from + CHUNK - 1)
+        if (error) throw error
+        if (!data || data.length === 0) break
+        allData = allData.concat(data)
+        if (data.length < CHUNK) break
+        from += CHUNK
       }
 
-      if (salaryOnly) {
-        query = query.or('salary_min.not.is.null,salary_text.not.is.null')
-      }
+      const uniqueJobs = dedupeJobs(allData)
 
-      if (sort === 'salary') {
-        query = query.order('salary_min', { ascending: false, nullsFirst: false })
-      } else {
-        query = query.order('first_seen', { ascending: false })
-      }
+      // Compute per-country counts from the full active set
+      const countryCounts: Record<string, number> = {}
+      uniqueJobs.forEach((job: any) => {
+        if (Array.isArray(job.countries)) {
+          job.countries.forEach((c: string) => {
+            countryCounts[c] = (countryCounts[c] || 0) + 1
+          })
+        }
+      })
 
-      const from = (page - 1) * pageSize
-      const to = from + pageSize - 1
-      query = query.range(from, to)
-
-      const { data, error, count } = await query
-
-      if (!error && data) {
-        const uniqueJobs = dedupeJobs(data)
-        return NextResponse.json({
-          jobs: uniqueJobs,
-          total: uniqueJobs.length,
-          page,
-          pageSize,
-          hasMore: (count || 0) > page * pageSize,
-        })
-      }
+      return NextResponse.json({
+        jobs: uniqueJobs,
+        total: uniqueJobs.length,
+        countryCounts,
+      })
     } catch (e) {
       console.warn('Supabase query failed:', e)
     }
@@ -89,8 +105,6 @@ export async function GET(request: NextRequest) {
   return NextResponse.json({
     jobs: [],
     total: 0,
-    page,
-    pageSize,
-    hasMore: false,
+    countryCounts: {},
   })
 }

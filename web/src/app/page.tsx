@@ -27,9 +27,10 @@ function JobsBoard() {
   const [sortOpen, setSortOpen] = useState(false)
   const [visibleCount, setVisibleCount] = useState(15)
   const [allJobs, setAllJobs] = useState<Job[]>([])
+  const [countryCounts, setCountryCounts] = useState<Record<string, number>>({})
   const [isLoading, setIsLoading] = useState(true)
 
-  // Fetch real jobs from Supabase API (falls back cleanly to mock jobs ONLY if database is empty or offline)
+  // Fetch ALL active jobs from Supabase API (no cap; server paginates internally)
   useEffect(() => {
     let isMounted = true
     async function fetchLiveJobs() {
@@ -40,6 +41,7 @@ function JobsBoard() {
           const data = await res.json()
           if (isMounted && data.jobs) {
             setAllJobs(dedupeJobs(data.jobs))
+            setCountryCounts(data.countryCounts || {})
           }
         }
       } catch (err) {
@@ -194,6 +196,12 @@ function JobsBoard() {
     return res
   }, [allJobs])
 
+  // Distinct companies with at least one active job
+  const activeCompanyCount = useMemo(
+    () => new Set(allJobs.map((j) => j.companies?.id).filter(Boolean)).size,
+    [allJobs]
+  )
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-8 py-8 flex flex-col w-full">
       {/* Search & Heading Module */}
@@ -205,10 +213,10 @@ function JobsBoard() {
             </h1>
             <p className="text-[14px] text-[#58697A] mt-1">
               <span className="font-mono text-[#0F1F2A] font-semibold">
-                1,284
+                {allJobs.length}
               </span>{' '}
               open roles from{' '}
-              <span className="font-mono text-[#0F1F2A] font-semibold">96</span>{' '}
+              <span className="font-mono text-[#0F1F2A] font-semibold">{activeCompanyCount}</span>{' '}
               verified cybersecurity teams.
             </p>
           </div>
@@ -217,6 +225,8 @@ function JobsBoard() {
           <SearchBar
             query={filters.q}
             selectedCountry={filters.country}
+            totalJobs={allJobs.length}
+            countryCounts={countryCounts}
             onQueryChange={(q) => updateFilters({ q })}
             onCountryChange={(country) => updateFilters({ country })}
           />
