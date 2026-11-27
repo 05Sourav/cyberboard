@@ -39,10 +39,16 @@ EXCLUDE_PATTERNS = [
     r"\bsecurity deposit\b",
     r"\bbuilding security\b",
 
-    # Clearance and facility ops
+    # Clearance and facility / workplace ops / physical safety
     r"\bfacility security officer\b",
+    r"\bfacilities\b",
     r"\bfso\b",
     r"\bpersonnel security\b",
+    r"\bworkplace operations\b",
+    r"\bworkplace safety\b",
+    r"\bexecutive protection\b",
+    r"\bhealth (and|&) safety\b",
+    r"\behs\b",
 
     # Sales / BD
     r"\baccount executive\b",
@@ -96,6 +102,12 @@ CLEAR_SECURITY_DEPTS = re.compile(
 SECURITY_COMPILED = [(pat, re.compile(pat, re.IGNORECASE)) for pat in SECURITY_PATTERNS]
 EXCLUDE_COMPILED = [re.compile(pat, re.IGNORECASE) for pat in EXCLUDE_PATTERNS]
 
+SAFETY_AND_SECURITY_RE = re.compile(r"\bsafety\s*(?:&|and)\s*security\b", re.IGNORECASE)
+TECH_SECURITY_OVERRIDE_RE = re.compile(
+    r"\b(cyber\w*|infosec|information security|application security|appsec|application|cloud|network|product security|security engineer\w*|devsecops)\b",
+    re.IGNORECASE,
+)
+
 IDENTITY_COOCCUR_RE = re.compile(
     r"\b(access|iam|governance|infrastructure|security|engineer\w*|architect\w*|authentication)\b",
     re.IGNORECASE
@@ -120,6 +132,9 @@ def is_security(title: str, department: str = "", explain: bool = False):
             if ex.search(t):
                 reason = f"Excluded by pattern: {ex.pattern}"
                 return (False, None, reason) if explain else (False, None)
+        if SAFETY_AND_SECURITY_RE.search(t) and not TECH_SECURITY_OVERRIDE_RE.search(t):
+            reason = f"Excluded by pattern: {SAFETY_AND_SECURITY_RE.pattern} (no technical security term)"
+            return (False, None, reason) if explain else (False, None)
 
     # 2. Strip 'security clearance' so it doesn't count as a security keyword match
     t_clean = re.sub(r"\bsecurity clearance\b", "", t, flags=re.IGNORECASE)

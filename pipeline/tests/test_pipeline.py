@@ -67,6 +67,13 @@ def test_audit_tightened_must_exclude():
         ("Business Development Manager Identity", ""),
         ("Sr. Staff SRE - Federal Security Clearance", ""),
         ("GTM Product Marketing Manager Access Security", ""),
+        ("Senior Manager, Workplace Operations, Safety & Security", ""),
+        ("Workplace Safety Specialist", ""),
+        ("Facilities Security Coordinator", ""),
+        ("Manager, Safety and Security", ""),
+        ("Executive Protection Specialist", ""),
+        ("Health and Safety Manager", ""),
+        ("EHS Security Lead", ""),
     ]
     for title, dept in must_exclude:
         matched, _ = is_security(title, dept)
@@ -77,11 +84,14 @@ def test_audit_tightened_must_keep():
     """Verify technical security and pre-sales engineering roles are preserved."""
     must_keep = [
         ("Senior Security Engineer", ""),
+        ("Security Operations Manager", ""),
+        ("Product Security Engineer", ""),
         ("Staff Product Security Engineer", ""),
         ("Incident Response Engineer", ""),
         ("Senior Software Engineer Identity & Access Management", ""),
         ("Security Sales Engineer", ""),
         ("Threat Intelligence Engineer", ""),
+        ("Cloud Safety & Security Engineer", ""),
     ]
     for title, dept in must_keep:
         matched, kw = is_security(title, dept)
