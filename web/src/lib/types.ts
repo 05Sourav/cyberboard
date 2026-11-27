@@ -117,4 +117,4 @@ export const ALL_LEVELS: Level[] = [
 
 export const ALL_WORK_MODES: WorkMode[] = ['Remote', 'Hybrid', 'On-site']
 
-export { LAUNCH_DATE } from '@/config/site'
+export { LAUNCH_DATE } from '../config/site'

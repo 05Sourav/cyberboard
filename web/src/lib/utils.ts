@@ -1,5 +1,5 @@
-import { FilterState, Job } from './types'
-import { LAUNCH_DATE } from '@/config/site'
+import type { FilterState, Job } from './types.ts'
+import { LAUNCH_DATE } from '../config/site.ts'
 
 /** Parse URL search params into a FilterState object. */
 export function parseFilters(params: URLSearchParams): FilterState {
@@ -131,6 +131,86 @@ export function interleaveCompanyJobs(jobs: Job[], maxConsecutive = 2): Job[] {
   }
 
   return result
+}
+
+const TIE_BUCKET_WINDOW_MS = 5 * 60 * 1000
+
+function hashCompanyRank(companyKey: string, seed: number): number {
+  const str = `${seed}:${companyKey}`
+  let h = 2166136261
+  for (let i = 0; i < str.length; i++) {
+    h ^= str.charCodeAt(i)
+    h = Math.imul(h, 16777619)
+  }
+  return (h >>> 0) / 4294967296
+}
+
+/**
+ * Sort jobs by "Most recent" (posted_at if known, otherwise first_seen) descending.
+ * Jobs with sort keys within 5 minutes are grouped into tie buckets and ordered
+ * round-robin across companies (in a random-but-stable order per page seed),
+ * followed by max-2-consecutive company interleaving.
+ */
+export function sortMostRecentJobs(jobs: Job[], seed = 0): Job[] {
+  if (jobs.length <= 1) return [...jobs]
+
+  const withTimes = jobs.map((job) => ({
+    job,
+    time: new Date(job.posted_at || job.first_seen).getTime(),
+  }))
+
+  withTimes.sort((a, b) => b.time - a.time)
+
+  // Group into 5-minute tie buckets
+  const buckets: Array<Array<{ job: Job; time: number }>> = []
+  let currentBucket: Array<{ job: Job; time: number }> = []
+  let bucketAnchor = withTimes[0].time
+
+  for (const item of withTimes) {
+    if (currentBucket.length === 0 || bucketAnchor - item.time <= TIE_BUCKET_WINDOW_MS) {
+      currentBucket.push(item)
+    } else {
+      buckets.push(currentBucket)
+      currentBucket = [item]
+      bucketAnchor = item.time
+    }
+  }
+  if (currentBucket.length > 0) {
+    buckets.push(currentBucket)
+  }
+
+  // Round-robin across companies within each tie bucket
+  const ordered: Job[] = []
+  for (const bucket of buckets) {
+    const byCompany = new Map<string, Job[]>()
+    for (const { job } of bucket) {
+      const key = job.companies?.id || job.company_id || job.companies?.slug || job.companies?.name || job.id
+      const list = byCompany.get(key)
+      if (list) {
+        list.push(job)
+      } else {
+        byCompany.set(key, [job])
+      }
+    }
+
+    const companyGroups = Array.from(byCompany.entries())
+      .sort(([keyA], [keyB]) => hashCompanyRank(keyA, seed) - hashCompanyRank(keyB, seed))
+      .map(([, list]) => list)
+
+    const bucketOrdered: Job[] = []
+    const maxLen = Math.max(...companyGroups.map((g) => g.length))
+    for (let round = 0; round < maxLen; round++) {
+      for (const group of companyGroups) {
+        if (round < group.length) {
+          bucketOrdered.push(group[round])
+        }
+      }
+    }
+
+    ordered.push(...interleaveCompanyJobs(bucketOrdered, 2))
+  }
+
+  return ordered
 }
 
 /** Detect country from browser timezone (Intl). */

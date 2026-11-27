@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { FilterState, Job } from '@/lib/types'
-import { parseFilters, serializeFilters, dedupeJobs, interleaveCompanyJobs } from '@/lib/utils'
+import { parseFilters, serializeFilters, dedupeJobs, sortMostRecentJobs } from '@/lib/utils'
 import { partitionPromotedJobs } from '@/lib/promotions'
 import { SearchBar } from '@/components/SearchBar'
 import { FilterSidebar } from '@/components/FilterSidebar'
@@ -25,6 +25,7 @@ function JobsBoard() {
   })
 
   const [sortOpen, setSortOpen] = useState(false)
+  const [sortSeed] = useState(() => Math.random())
   const [visibleCount, setVisibleCount] = useState(15)
   const [allJobs, setAllJobs] = useState<Job[]>([])
   const [countryCounts, setCountryCounts] = useState<Record<string, number>>({})
@@ -159,17 +160,11 @@ function JobsBoard() {
 
       return true
     })
-    const sorted = filtered.sort((a, b) => {
-      if (filters.sort === 'salary') {
-        return (b.salary_min || 0) - (a.salary_min || 0)
-      }
-      // "Most recent": ONE combined key per job (posted_at if known, otherwise first_seen) descending across all jobs
-      const aKey = new Date(a.posted_at || a.first_seen).getTime()
-      const bKey = new Date(b.posted_at || b.first_seen).getTime()
-      return bKey - aKey
-    })
-    return filters.sort === 'newest' ? interleaveCompanyJobs(sorted) : sorted
-  }, [filters, allJobs])
+    if (filters.sort === 'salary') {
+      return filtered.sort((a, b) => (b.salary_min || 0) - (a.salary_min || 0))
+    }
+    return sortMostRecentJobs(filtered, sortSeed)
+  }, [filters, allJobs, sortSeed])
 
   // Apply promotion placement rules: max 3 pinned, random rotation, 1 per employer, overflow in regular list
   const { pinnedJobs, regularJobs } = useMemo(() => {
